@@ -3,3 +3,4 @@
 .venv/
 __pycache__/
 mal/__pycache__/
+*.ipynb
