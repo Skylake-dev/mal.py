@@ -34,7 +34,7 @@ class Author:
     def __str__(self) -> str:
         return f'{self.full_name} - {self.role}'
 
-    @ property
+    @property
     def full_name(self):
         """Returns the full name of the author if available."""
         return f'{self.first_name} {self.last_name}'
@@ -74,7 +74,7 @@ class Manga(Result):
         for magazine in _magazines:
             self._serialization.append(magazine['node'])
 
-    @ property
+    @property
     def serialization(self):
         """Magazines or other formats where the series is published."""
         return ', '.join(mag['name'] for mag in self._serialization)
@@ -105,7 +105,7 @@ class MangaListEntryStatus(ListStatus):
         self.num_times_reread: int = data.get('num_times_reread', 0)
         self.rewatch_value: int = data.get('rewatch_value', 0)
 
-    @ property
+    @property
     def completed(self) -> bool:
         return self.status is MangaListStatus('completed')
 
