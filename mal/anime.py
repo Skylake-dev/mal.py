@@ -2,9 +2,17 @@ from datetime import datetime, time
 from typing import List, Iterator, Optional
 
 from .utils import MISSING
-from .enums import AdaptationFrom, AnimeStatus, AnimeMediaType
-from .base import Result
-from .typed import AnimePayload, AnimeSearchPayload, GenericPayload, SeasonPayload
+from .enums import AdaptationFrom, AnimeStatus, AnimeMediaType, AnimeListStatus
+from .base import Result, UserListEntry, UserList, ListStatus
+from .typed import (
+    AnimePayload,
+    AnimeSearchPayload,
+    GenericPayload,
+    SeasonPayload,
+    AnimeListEntryPayload,
+    AnimeListPayload,
+    AnimeListEntryStatusPayload
+)
 
 
 class Anime(Result):
@@ -81,3 +89,36 @@ class AnimeSearchResults:
 
     def __str__(self) -> str:
         return '\n'.join([str(result) for result in self._results])
+
+
+class AnimeListEntryStatus(ListStatus):
+    def __init__(self, data: AnimeListEntryStatusPayload) -> None:
+        super().__init__(data)
+        self.status: AnimeListStatus = AnimeListStatus(data.get('status'))
+        self.num_episodes_watched: int = data.get('num_episodes_watched', 0)
+        self.is_rewatching: bool = data.get('is_rewatching', False)
+        self.num_times_rewatched: int = data.get('num_times_rewatched', 0)
+        self.rewatch_value: int = data.get('rewatch_value', 0)
+
+    @property
+    def completed(self) -> bool:
+        return self.status is AnimeListStatus('completed')
+
+
+class AnimeListEntry(UserListEntry):
+    def __init__(self, data: AnimeListEntryPayload) -> None:
+        super().__init__(data)
+        self.entry: Anime = Anime(data['node'])
+        self.list_status: AnimeListEntryStatus = AnimeListEntryStatus(
+            data['list_status'])
+
+
+class AnimeList(UserList):
+    def __init__(self, data: AnimeListPayload) -> None:
+        super().__init__(data)
+        self._list: List[AnimeListEntry] = []
+        for item in data['data']:
+            self._list.append(AnimeListEntry(item))
+
+    def __iter__(self) -> Iterator[AnimeListEntry]:
+        return iter(self._list)

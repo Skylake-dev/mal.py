@@ -1,8 +1,16 @@
 from typing import List, Iterator, Optional
 
-from .enums import MangaStatus, MangaMediaType
-from .base import Result
-from .typed import AuthorPayload, GenericPayload, MangaPayload, MangaSearchPayload
+from .enums import MangaStatus, MangaMediaType, MangaListStatus
+from .base import Result, ListStatus, UserListEntry, UserList
+from .typed import (
+    AuthorPayload,
+    GenericPayload,
+    MangaPayload,
+    MangaSearchPayload,
+    MangaListEntryPayload,
+    MangaListEntryStatusPayload,
+    MangaListPayload
+)
 
 
 class Author:
@@ -26,7 +34,7 @@ class Author:
     def __str__(self) -> str:
         return f'{self.full_name} - {self.role}'
 
-    @property
+    @ property
     def full_name(self):
         """Returns the full name of the author if available."""
         return f'{self.first_name} {self.last_name}'
@@ -66,7 +74,7 @@ class Manga(Result):
         for magazine in _magazines:
             self._serialization.append(magazine['node'])
 
-    @property
+    @ property
     def serialization(self):
         """Magazines or other formats where the series is published."""
         return ', '.join(mag['name'] for mag in self._serialization)
@@ -85,3 +93,37 @@ class MangaSearchResults:
 
     def __str__(self) -> str:
         return '\n'.join([str(result) for result in self._results])
+
+
+class MangaListEntryStatus(ListStatus):
+    def __init__(self, data: MangaListEntryStatusPayload) -> None:
+        super().__init__(data)
+        self.status: MangaListStatus = MangaListStatus(data.get('status'))
+        self.num_volumes_read: int = data.get('num_volumes_read', 0)
+        self.num_chapters_read: int = data.get('num_chapters_read', 0)
+        self.is_rereading: bool = data.get('is_rereading', False)
+        self.num_times_reread: int = data.get('num_times_reread', 0)
+        self.rewatch_value: int = data.get('rewatch_value', 0)
+
+    @ property
+    def completed(self) -> bool:
+        return self.status is MangaListStatus('completed')
+
+
+class MangaListEntry(UserListEntry):
+    def __init__(self, data: MangaListEntryPayload) -> None:
+        super().__init__(data)
+        self.entry: Manga = Manga(data['node'])
+        self.list_status: MangaListEntryStatus = MangaListEntryStatus(
+            data['list_status'])
+
+
+class MangaList(UserList):
+    def __init__(self, data: MangaListPayload) -> None:
+        super().__init__(data)
+        self._list: List[MangaListEntry] = []
+        for item in data['data']:
+            self._list.append(MangaListEntry(item))
+
+    def __iter__(self) -> Iterator[MangaListEntry]:
+        return iter(self._list)

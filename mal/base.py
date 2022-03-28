@@ -1,12 +1,22 @@
 """Contains the definitions for the base classes used in other modules."""
 from datetime import datetime, date
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from .utils import MISSING
 from .titles import Titles
 from .enums import NSFWlevel
 from .genre import Genre
-from .typed import BaseResultPayload, ResultPayload, PicturePayload, RelationPayload, RecommendationPayload
+from .typed import (
+    BaseResultPayload,
+    ResultPayload,
+    PicturePayload,
+    RelationPayload,
+    RecommendationPayload,
+    ListStatusPayload,
+    ListEntryPayload,
+    AnimeListPayload,
+    MangaListPayload
+)
 
 
 class BaseResult:
@@ -185,7 +195,7 @@ class Result(BaseResult):
                 start_date = datetime.strptime(self._start, '%Y')
                 start_date = start_date.year
             finally:
-                return start_date  # type: ignore
+                return start_date   # type: ignore
         return None
 
     @property
@@ -221,3 +231,73 @@ class Result(BaseResult):
                     pics.append(pic['medium'])
             return pics
         return None
+
+
+class ListStatus:
+    """Information that is associated to an entry in a user list.
+
+    Attributes:
+        score: the score that the user gave to this title
+        priority: numeric value of the priority given to this title
+        tags: list of tags that the user categorized this title as
+    """
+
+    def __init__(self, data: ListStatusPayload) -> None:
+        self.score: int = data.get('score', 0)
+        self._start: str = data.get('start_date', MISSING)
+        self._end: str = data.get('end_date', MISSING)
+        self.priority: int = data.get('priority', 0)
+        self.tags: List[str] = []
+        _tags = data.get('tags', MISSING)
+        if _tags is not MISSING:
+            self.tags = [tag for tag in _tags]
+        self._updated_at: str = data.get('updated_at', MISSING)
+
+    @property
+    def start_date(self) -> Optional[date]:
+        """Returns the ending date as a datetime.date."""
+        if self._start is not MISSING:
+            return datetime.strptime(self._start, '%Y-%m-%d')
+        return None
+
+    @property
+    def end_date(self) -> Optional[date]:
+        """Returns the ending date as a datetime.date."""
+        if self._end is not MISSING:
+            return datetime.strptime(self._end, '%Y-%m-%d')
+        return None
+
+    @property
+    def created_at(self) -> Optional[datetime]:
+        """ISO 8061 datetime of when the user updated the entry."""
+        if self._updated_at is not MISSING:
+            return datetime.fromisoformat(self._updated_at)
+        return None
+
+
+class UserListEntry:
+    """Represents an entry in a user list."""
+
+    def __init__(self, data: ListEntryPayload) -> None:
+        # do not initialize the values because they are overridden in the subclasses
+        self.entry: BaseResult
+        self.list_status: ListStatus
+
+    def __str__(self) -> str:
+        return f'{self.entry.title} - scored: {self.score}'
+
+    @property
+    def score(self) -> int:
+        """Returns the score for this entry."""
+        return self.list_status.score
+
+
+class UserList:
+    """Base for representing a user list."""
+
+    def __init__(self, data: Union[AnimeListPayload, MangaListPayload]) -> None:
+        # initialized in subclass to avoid doing it twice
+        self._list: List[Any]
+
+    def __str__(self) -> str:
+        return '\n'.join([str(item) for item in self._list])

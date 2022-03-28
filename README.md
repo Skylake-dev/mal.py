@@ -8,10 +8,10 @@ The objective for now is to cover queries for the publicly available information
 
 - anime and mange search given a keyword
 - fetch details of anime or manga given its id or its url
+- accessing public lists of users
 
 The next features that are planned to be implemented are:
 
-- accessing public lists of users
 - retrieve more information on recommendations and related entries
 - retrieving seasonal anime
 - retrieve rankings for anime and manga

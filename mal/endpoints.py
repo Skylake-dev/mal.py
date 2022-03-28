@@ -14,7 +14,7 @@ MANGA = BASE + '/manga'
 MANGA_RANKING = BASE + '/manga/ranking'
 
 # use /user/<username>/mangalist or /user/<username>/animelist for those
-USER = BASE + '/user'
+USER = BASE + '/users'
 
 FORUM_BOARDS = BASE + '/forum/boards'
 FORUM_TOPICS = BASE + '/forum/topics'

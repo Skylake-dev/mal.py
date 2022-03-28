@@ -3,9 +3,9 @@ import requests
 from typing import List, Dict, Union
 
 from . import endpoints
-from .anime import Anime, AnimeSearchResults
-from .manga import Manga, MangaSearchResults
-from .enums import Field
+from .anime import Anime, AnimeSearchResults, AnimeList
+from .manga import Manga, MangaSearchResults, MangaList
+from .enums import Field, AnimeListStatus, MangaListStatus
 from .utils import MISSING
 
 
@@ -16,21 +16,22 @@ class Client:
         self.__client_id: str = client_id
         self._session: requests.Session = requests.Session()
         self._session.headers.update({'X-MAL-CLIENT-ID': self.__client_id})
-        self._limit: int = 10  # between 1 and 100
+        self._search_limit: int = 10  # between 1 and 100
+        self._list_limit: int = 100   # between 1 and 1000
         self._anime_fields: List[Field] = Field.default_anime()
         self._manga_fields: List[Field] = Field.default_manga()
 
     @property
-    def limit(self) -> int:
+    def search_limit(self) -> int:
         """Maximum number of results per page. Defaults to 10. Can be changed
         with any integer between 1 and 100. If a number outside of this range
         is given then the value is set to the closest value inside the range.
         """
-        return self._limit
+        return self._search_limit
 
-    @limit.setter
-    def limit(self, value: int) -> None:
-        self._limit = self._get_limit(value)
+    @search_limit.setter
+    def search_limit(self, value: int) -> None:
+        self._search_limit = self._get_limit(value)
 
     @property
     def anime_fields(self) -> List[Field]:
@@ -77,7 +78,7 @@ class Client:
         Returns:
             AnimeSearchResults: iterable object containing the results
         """
-        parameters = self._build_parameters(
+        parameters = self._build_search_parameters(
             'anime', limit=limit, fields=fields)
         parameters['q'] = query
         url: str = endpoints.ANIME
@@ -107,7 +108,7 @@ class Client:
         Returns:
             MangaSearchResults: iterable object containing the results
         """
-        parameters = self._build_parameters(
+        parameters = self._build_search_parameters(
             'manga', limit=limit, fields=fields)
         parameters['q'] = query
         url: str = endpoints.MANGA
@@ -128,7 +129,7 @@ class Client:
         Returns:
             Anime: the anime object with all the details
         """
-        parameters = self._build_parameters('anime', fields=fields)
+        parameters = self._build_search_parameters('anime', fields=fields)
         url: str = endpoints.ANIME + '/' + self._get_as_id(id)
         response = self._request(url, params=parameters)
         data = response.json()
@@ -146,11 +147,67 @@ class Client:
         Returns:
             Manga: the anime object with all the details
         """
-        parameters = self._build_parameters('manga', fields=fields)
+        parameters = self._build_search_parameters('manga', fields=fields)
         url: str = endpoints.MANGA + '/' + self._get_as_id(id)
         response = self._request(url, params=parameters)
         data = response.json()
         return Manga(data)
+
+    def get_anime_list(
+        self,
+        username: str,
+        *,
+        limit: int = MISSING,
+        fields: List[Field] = MISSING,
+        status: Union[AnimeListStatus, str] = MISSING
+    ) -> AnimeList:
+        """Returns the anime list of a specific user, if public.
+
+        Args:
+            username: the MAL username of the user, case insensitive
+
+        Keyword args:
+            limit: optional, set the number of entries to retrieve, defaults to 10
+            fields: optional, set which fields to get for each entry
+            status: optional, return only a specific category. will return all if omitted
+
+        Returns:
+            AnimeList: iterable with all the entries of the list
+        """
+        parameters = self._build_list_paramenters(
+            'anime', limit=limit, fields=fields, status=status)
+        url = f'{endpoints.USER}/{username}/animelist'
+        response = self._request(url, params=parameters)
+        data = response.json()
+        return AnimeList(data)
+
+    def get_manga_list(
+        self,
+        username: str,
+        *,
+        limit: int = MISSING,
+        fields: List[Field] = MISSING,
+        status: Union[MangaListStatus, str] = MISSING
+    ) -> MangaList:
+        """Returns the manga list of a specific user, if public.
+
+        Args:
+            username: the MAL username of the user, case insensitive
+
+        Keyword args:
+            limit: optional, set the number of entries to retrieve, defaults to 10
+            fields: optional, set which fields to get for each entry
+            status: optional, return only a specific category. will return all if omitted
+
+        Returns:
+            MangaList: iterable with all the entries of the list
+        """
+        parameters = self._build_list_paramenters(
+            'manga', limit=limit, fields=fields, status=status)
+        url = f'{endpoints.USER}/{username}/mangalist'
+        response = self._request(url, params=parameters)
+        data = response.json()
+        return MangaList(data)
 
     def _request(self, url: str, params: Dict[str, str] = MISSING) -> requests.Response:
         """Handles all the requests that are made and checks the status code of the response.
@@ -163,18 +220,18 @@ class Client:
         response.raise_for_status()  # TODO: handle error and possible retries
         return response
 
-    def _build_parameters(
+    def _build_search_parameters(
         self,
         type: str,    # can be either 'anime' or 'manga'
         *,
         limit: int = MISSING,
-        fields: List[Field] = MISSING,
+        fields: List[Field] = MISSING
     ) -> Dict[str, str]:
         parameters: Dict[str, str] = {}
         if limit is not MISSING:
             parameters['limit'] = str(self._get_limit(limit))
         else:
-            parameters['limit'] = str(self._limit)
+            parameters['limit'] = str(self._search_limit)
         if fields is not MISSING:
             if type.lower() == 'anime':
                 parameters['fields'] = ','.join(
@@ -191,6 +248,35 @@ class Client:
                     [f.value for f in self._manga_fields])
         return parameters
 
+    def _build_list_paramenters(
+        self,
+        type: str,    # can be either 'anime' or 'manga'
+        *,
+        limit: int = MISSING,
+        fields: List[Field] = MISSING,
+        status: Union[AnimeListStatus, MangaListStatus, str] = MISSING
+    ) -> Dict[str, str]:
+        parameters: Dict[str, str] = {}
+        if limit is not MISSING:
+            parameters['limit'] = str(limit)
+        if fields is not MISSING:
+            if type.lower() == 'anime':
+                parameters['fields'] = ','.join(
+                    [f.value for f in fields if f.is_anime])
+            else:
+                parameters['fields'] = ','.join(
+                    [f.value for f in fields if f.is_manga])
+            parameters['fields'] += ',list_status'
+        else:
+            parameters['fields'] = 'list_status'
+        if status is not MISSING:
+            if isinstance(status, str):
+                value = status
+            else:
+                value = status.value
+            parameters['status'] = value
+        return parameters
+
     def _get_limit(self, value: int) -> int:
         """Check that the value of the parameter limit is within
         the correct interval.
@@ -204,7 +290,7 @@ class Client:
             limit = value
         return limit
 
-    def _get_as_id(self, value: Union[int, str]):
+    def _get_as_id(self, value: Union[int, str]) -> str:
         """Returns the string representing the id that can be used
         to build the url to request. Accepts both int or an url of the
         MAL page.

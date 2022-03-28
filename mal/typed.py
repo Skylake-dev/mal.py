@@ -122,6 +122,8 @@ class MangaPayload(ResultPayload, total=False):
     serialization: List[SerializationPayload]
 
 
+# Related to search results
+
 class AnimeNodePayload(TypedDict):
     node: AnimePayload
 
@@ -131,6 +133,7 @@ class MangaNodePayload(TypedDict):
 
 
 class PagingPayload(TypedDict, total=False):
+    # for now this is not used
     previous: str
     next: str
 
@@ -142,4 +145,65 @@ class AnimeSearchPayload(TypedDict):
 
 class MangaSearchPayload(TypedDict):
     data: List[MangaNodePayload]
+    paging: PagingPayload
+
+
+# Related to user list
+
+class ListStatusPayload(TypedDict, total=False):
+    status: str
+    score: int
+    start_date: str
+    finish_date: str
+    priority: int
+    tags: List[str]
+    comments: str
+    updated_at: str
+
+
+class AnimeListEntryStatusPayload(ListStatusPayload, total=False):
+    num_episodes_watched: int
+    is_rewatching: bool
+    num_times_rewatched: int
+    rewatch_value: int
+
+
+class MangaListEntryStatusPayload(ListStatusPayload, total=False):
+    num_volumes_read: int
+    num_chapters_read: int
+    is_rereading: bool
+    num_times_reread: int
+    reread_value: int
+
+
+class ListEntryPayload(TypedDict):
+    # total because the list_status field is always requested
+    node: ResultPayload
+    list_status: ListStatusPayload
+
+
+class AnimeListEntryPayload(TypedDict):
+    # total because the list_status field is always requested
+    node: AnimePayload
+    list_status: AnimeListEntryStatusPayload
+
+
+class MangaListEntryPayload(TypedDict):
+    # total because the list_status field is always requested
+    node: MangaPayload
+    list_status: MangaListEntryStatusPayload
+
+
+class ListPayload(TypedDict):
+    data: List[ListEntryPayload]
+    paging: PagingPayload
+
+
+class AnimeListPayload(TypedDict):
+    data: List[AnimeListEntryPayload]
+    paging: PagingPayload
+
+
+class MangaListPayload(TypedDict):
+    data: List[MangaListEntryPayload]
     paging: PagingPayload
