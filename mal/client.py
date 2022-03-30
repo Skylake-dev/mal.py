@@ -2,7 +2,7 @@
 import requests
 from typing import List, Dict, Union
 
-from . import endpoints
+from .endpoints import Endpoint
 from .anime import Anime, AnimeSearchResults, AnimeList
 from .manga import Manga, MangaSearchResults, MangaList
 from .enums import Field, AnimeListStatus, MangaListStatus
@@ -17,7 +17,6 @@ class Client:
         self._session: requests.Session = requests.Session()
         self._session.headers.update({'X-MAL-CLIENT-ID': self.__client_id})
         self._search_limit: int = 10  # between 1 and 100
-        self._list_limit: int = 100   # between 1 and 1000
         self._anime_fields: List[Field] = Field.default_anime()
         self._manga_fields: List[Field] = Field.default_manga()
 
@@ -31,7 +30,7 @@ class Client:
 
     @search_limit.setter
     def search_limit(self, value: int) -> None:
-        self._search_limit = self._get_limit(value)
+        self._search_limit = value if 0 < value < 100 else 100
 
     @property
     def anime_fields(self) -> List[Field]:
@@ -79,9 +78,9 @@ class Client:
             AnimeSearchResults: iterable object containing the results
         """
         parameters = self._build_search_parameters(
-            'anime', limit=limit, fields=fields)
+            Endpoint.ANIME, limit=limit, fields=fields)
         parameters['q'] = query
-        url: str = endpoints.ANIME
+        url: str = Endpoint.ANIME.url
         response = self._request(url, params=parameters)
         data = response.json()
         results = AnimeSearchResults(data)
@@ -109,9 +108,9 @@ class Client:
             MangaSearchResults: iterable object containing the results
         """
         parameters = self._build_search_parameters(
-            'manga', limit=limit, fields=fields)
+            Endpoint.MANGA, limit=limit, fields=fields)
         parameters['q'] = query
-        url: str = endpoints.MANGA
+        url: str = Endpoint.MANGA.url
         response = self._request(url, params=parameters)
         data = response.json()
         results = MangaSearchResults(data)
@@ -129,8 +128,9 @@ class Client:
         Returns:
             Anime: the anime object with all the details
         """
-        parameters = self._build_search_parameters('anime', fields=fields)
-        url: str = endpoints.ANIME + '/' + self._get_as_id(id)
+        parameters = self._build_search_parameters(
+            Endpoint.ANIME, fields=fields)
+        url: str = Endpoint.ANIME.url + '/' + self._get_as_id(id)
         response = self._request(url, params=parameters)
         data = response.json()
         return Anime(data)
@@ -147,8 +147,9 @@ class Client:
         Returns:
             Manga: the anime object with all the details
         """
-        parameters = self._build_search_parameters('manga', fields=fields)
-        url: str = endpoints.MANGA + '/' + self._get_as_id(id)
+        parameters = self._build_search_parameters(
+            Endpoint.ANIME, fields=fields)
+        url: str = Endpoint.MANGA.url + '/' + self._get_as_id(id)
         response = self._request(url, params=parameters)
         data = response.json()
         return Manga(data)
@@ -175,8 +176,8 @@ class Client:
             AnimeList: iterable with all the entries of the list
         """
         parameters = self._build_list_paramenters(
-            'anime', limit=limit, fields=fields, status=status)
-        url = f'{endpoints.USER}/{username}/animelist'
+            Endpoint.USER_ANIMELIST, limit=limit, fields=fields, status=status)
+        url = Endpoint.USER_ANIMELIST.url.replace('{username}', username)
         response = self._request(url, params=parameters)
         data = response.json()
         return AnimeList(data)
@@ -203,8 +204,8 @@ class Client:
             MangaList: iterable with all the entries of the list
         """
         parameters = self._build_list_paramenters(
-            'manga', limit=limit, fields=fields, status=status)
-        url = f'{endpoints.USER}/{username}/mangalist'
+            Endpoint.USER_MANGALIST, limit=limit, fields=fields, status=status)
+        url = Endpoint.USER_MANGALIST.url.replace('{username}', username)
         response = self._request(url, params=parameters)
         data = response.json()
         return MangaList(data)
@@ -222,25 +223,25 @@ class Client:
 
     def _build_search_parameters(
         self,
-        type: str,    # can be either 'anime' or 'manga'
+        endpoint: Endpoint,
         *,
         limit: int = MISSING,
         fields: List[Field] = MISSING
     ) -> Dict[str, str]:
         parameters: Dict[str, str] = {}
         if limit is not MISSING:
-            parameters['limit'] = str(self._get_limit(limit))
+            parameters['limit'] = str(self._get_limit(endpoint, limit))
         else:
             parameters['limit'] = str(self._search_limit)
         if fields is not MISSING:
-            if type.lower() == 'anime':
+            if endpoint.is_anime:
                 parameters['fields'] = ','.join(
                     [f.value for f in fields if f.is_anime])
             else:
                 parameters['fields'] = ','.join(
                     [f.value for f in fields if f.is_manga])
         else:
-            if type.lower() == 'anime':
+            if endpoint.is_anime:
                 parameters['fields'] = ','.join(
                     [f.value for f in self._anime_fields])
             else:
@@ -250,7 +251,7 @@ class Client:
 
     def _build_list_paramenters(
         self,
-        type: str,    # can be either 'anime' or 'manga'
+        endpoint: Endpoint,
         *,
         limit: int = MISSING,
         fields: List[Field] = MISSING,
@@ -258,9 +259,9 @@ class Client:
     ) -> Dict[str, str]:
         parameters: Dict[str, str] = {}
         if limit is not MISSING:
-            parameters['limit'] = str(limit)
+            parameters['limit'] = str(self._get_limit(endpoint, limit))
         if fields is not MISSING:
-            if type.lower() == 'anime':
+            if endpoint.is_anime:
                 parameters['fields'] = ','.join(
                     [f.value for f in fields if f.is_anime])
             else:
@@ -277,15 +278,16 @@ class Client:
             parameters['status'] = value
         return parameters
 
-    def _get_limit(self, value: int) -> int:
+    def _get_limit(self, endpoint: Endpoint, value: int) -> int:
         """Check that the value of the parameter limit is within
-        the correct interval.
+        the correct interval for the given endpoint. If the value is outside
+        the closest value inside the interval is returned.
         """
         limit = 1
         if value < 1:
             limit = 1
-        elif value > 100:
-            limit = 100
+        elif value > endpoint.limit:
+            limit = endpoint.limit
         else:
             limit = value
         return limit
