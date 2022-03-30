@@ -27,8 +27,6 @@ class BaseResult:
         id: the id of the result
             NOTE: this is not unique for each object only between objects of the same category
             for example, all anime have different id but an anime and a manga can have same id
-        title: main title for the series
-        main_picture_url: url of the main picture used on the MAL page
     """
 
     def __init__(self, payload: BaseResultPayload) -> None:
@@ -132,11 +130,9 @@ class Result(BaseResult):
     Both Anime and Manga inherits from this as it contains the common fields
     between the two.
 
-    Attributes
+    Attributes:
         titles: all the alternative titles, including both english and japanese ones
         synopsis: synopsis available on the MAL page
-        start_date: starting date of publication, can be none if not requested or unknown
-        end_date: end date of publication, can be none if not requested or unknown
         mean: average score given by user rating
         rank: position in the ranking by score
         popularity: position in the ranking by users who have this title in their list
@@ -145,12 +141,9 @@ class Result(BaseResult):
         nsfw: the level of nsfw, can be white, gray or black
         genres: the different genres that this title falls under
         background: some background information of the title
-        created_at: ISO 8061 datetime of when the entry was created in the MAL database
-        updated_at: ISO 8061 datetime of when the entry was last updated in the MAL database
         related_anime: all the anime related to this title
         related_manga: all the manga related to this title
         recommendations: similar titles that users have recommended if you liked this one
-        pictures: list of urls of the available pictures
     """
 
     def __init__(self, payload: ResultPayload) -> None:

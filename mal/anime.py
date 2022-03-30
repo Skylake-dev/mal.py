@@ -29,8 +29,6 @@ class Anime(Result):
         source: from where the anime was adapted or if it is an original, None if not requested
         average_episode_duration: duration of the episodes in seconds
         rating: pg rating of the anime
-        studios: list of studios that produced the serie
-        start_season: year and season of the release
     """
 
     def __init__(self, payload: AnimePayload):

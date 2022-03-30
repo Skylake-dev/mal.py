@@ -20,7 +20,6 @@ class Author:
         id: the id in the MAL database
         first_name: the first name of the author
         last_name: the last name of the author
-        full_name: concatenation of first_name and last_name
         role: the role that the author has
     """
 
@@ -51,7 +50,6 @@ class Manga(Result):
         authors: list of authors that created the manga
         num_chapters: the number of chapters in total, 0 if not completed
         num_volumes: the number of volumes in total, 0 if not completed
-        serialization: magazines or other formats where the series is published
     """
 
     def __init__(self, payload: MangaPayload) -> None:
