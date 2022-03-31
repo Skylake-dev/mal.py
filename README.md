@@ -25,6 +25,8 @@ To use this library:
 - install requirements `pip install -r requirements.txt`
 - to perform requests you need an API token
 
+## Usage
+
 ```python
 from mal import client
 
@@ -36,4 +38,6 @@ anime.title
 >> Shingeki_no_Kyojin
 ```
 
-Full documentation will be produced in future updates.
+Full documentation available [here](https://malpy.readthedocs.io/en/latest/index.html).
+
+This project is still a work in progress, if you have problems or find bugs feel free to open an issue or start a discussion.
