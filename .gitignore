@@ -4,4 +4,7 @@
 __pycache__/
 mal/__pycache__/
 docs/build/
+build/
+dist/
+**.egg-info/
 *.ipynb
