@@ -19,6 +19,7 @@ class Client:
         self._search_limit: int = 10  # between 1 and 100
         self._anime_fields: List[Field] = Field.default_anime()
         self._manga_fields: List[Field] = Field.default_manga()
+        self._include_nsfw: bool = False
 
     @property
     def search_limit(self) -> int:
@@ -56,12 +57,25 @@ class Client:
     def manga_fields(self, new_fields: List[Field]) -> None:
         self._anime_fields = new_fields
 
+    @property
+    def include_nsfw(self) -> bool:
+        """Whether searches and lists include titles marked as nsfw. Defaults to False.
+        Can be also specified for each query using the corresponding keyword, overriding
+        this setting.
+        """
+        return self._include_nsfw
+
+    @include_nsfw.setter
+    def include_nsfw(self, value: bool) -> None:
+        self._include_nsfw = value
+
     def anime_search(
         self,
         query: str,
         *,
         limit: int = MISSING,
-        fields: List[Field] = MISSING
+        fields: List[Field] = MISSING,
+        include_nsfw: bool = MISSING
     ) -> AnimeSearchResults:
         """Search anime matching the given query. By default it uses the default parameters
         or the ones that have been set in limit and fields. If you pass limit and fields to this
@@ -73,12 +87,13 @@ class Client:
         Keyword args:
             limit: maximum number of results, needs to be between 1 and 100
             fields: the fields that are going to be requested, for a complete list see Field enum
+            include_nsfw: include results marked as nsfw
 
         Returns:
             AnimeSearchResults: iterable object containing the results
         """
         parameters = self._build_search_parameters(
-            Endpoint.ANIME, limit=limit, fields=fields)
+            Endpoint.ANIME, limit=limit, fields=fields, nsfw=include_nsfw)
         parameters['q'] = query
         url: str = Endpoint.ANIME.url
         response = self._request(url, params=parameters)
@@ -91,7 +106,8 @@ class Client:
         query: str,
         *,
         limit: int = MISSING,
-        fields: List[Field] = MISSING
+        fields: List[Field] = MISSING,
+        include_nsfw: bool = MISSING
     ) -> MangaSearchResults:
         """Search manga matching the given query. By default it uses the default parameters
         or the ones that have been set in limit and fields. If you pass limit and fields to this
@@ -103,12 +119,13 @@ class Client:
         Keyword args:
             limit: maximum number of results, needs to be between 1 and 100
             fields: the fields that are going to be requested, for a complete list see Field enum
+            include_nsfw: include results marked as nsfw
 
         Returns:
             MangaSearchResults: iterable object containing the results
         """
         parameters = self._build_search_parameters(
-            Endpoint.MANGA, limit=limit, fields=fields)
+            Endpoint.MANGA, limit=limit, fields=fields, nsfw=include_nsfw)
         parameters['q'] = query
         url: str = Endpoint.MANGA.url
         response = self._request(url, params=parameters)
@@ -123,7 +140,7 @@ class Client:
             id: the id of the anime or the url of its MAL page
 
         Keyword args:
-            fields: optional, list of fields to retrieve for this request
+            fields: list of fields to retrieve for this request
 
         Returns:
             Anime: the anime object with all the details
@@ -142,7 +159,7 @@ class Client:
             id: the id of the manga or the url of its MAL page
 
         Keyword args:
-            fields: optional, list of fields to retrieve for this request
+            fields: list of fields to retrieve for this request
 
         Returns:
             Manga: the anime object with all the details
@@ -160,7 +177,8 @@ class Client:
         *,
         limit: int = MISSING,
         fields: List[Field] = MISSING,
-        status: Union[AnimeListStatus, str] = MISSING
+        status: Union[AnimeListStatus, str] = MISSING,
+        include_nsfw: bool = MISSING
     ) -> AnimeList:
         """Returns the anime list of a specific user, if public.
 
@@ -168,15 +186,16 @@ class Client:
             username: the MAL username of the user, case insensitive
 
         Keyword args:
-            limit: optional, set the number of entries to retrieve, defaults to 10
-            fields: optional, set which fields to get for each entry
-            status: optional, return only a specific category. will return all if omitted
+            limit: set the number of entries to retrieve, defaults to 10
+            fields: set which fields to get for each entry
+            status: return only a specific category. will return all if omitted
+            include_nsfw: include results marked as nsfw
 
         Returns:
             AnimeList: iterable with all the entries of the list
         """
         parameters = self._build_list_paramenters(
-            Endpoint.USER_ANIMELIST, limit=limit, fields=fields, status=status)
+            Endpoint.USER_ANIMELIST, limit=limit, fields=fields, status=status, nsfw=include_nsfw)
         url = Endpoint.USER_ANIMELIST.url.replace('{username}', username)
         response = self._request(url, params=parameters)
         data = response.json()
@@ -188,7 +207,8 @@ class Client:
         *,
         limit: int = MISSING,
         fields: List[Field] = MISSING,
-        status: Union[MangaListStatus, str] = MISSING
+        status: Union[MangaListStatus, str] = MISSING,
+        include_nsfw: bool = MISSING
     ) -> MangaList:
         """Returns the manga list of a specific user, if public.
 
@@ -196,15 +216,16 @@ class Client:
             username: the MAL username of the user, case insensitive
 
         Keyword args:
-            limit: optional, set the number of entries to retrieve, defaults to 10
-            fields: optional, set which fields to get for each entry
-            status: optional, return only a specific category. will return all if omitted
+            limit: set the number of entries to retrieve, defaults to 10
+            fields: set which fields to get for each entry
+            status: return only a specific category. will return all if omitted
+            include_nsfw: include results marked as nsfw
 
         Returns:
             MangaList: iterable with all the entries of the list
         """
         parameters = self._build_list_paramenters(
-            Endpoint.USER_MANGALIST, limit=limit, fields=fields, status=status)
+            Endpoint.USER_MANGALIST, limit=limit, fields=fields, status=status, nsfw=include_nsfw)
         url = Endpoint.USER_MANGALIST.url.replace('{username}', username)
         response = self._request(url, params=parameters)
         data = response.json()
@@ -226,7 +247,8 @@ class Client:
         endpoint: Endpoint,
         *,
         limit: int = MISSING,
-        fields: List[Field] = MISSING
+        fields: List[Field] = MISSING,
+        nsfw: bool = MISSING
     ) -> Dict[str, str]:
         parameters: Dict[str, str] = {}
         if limit is not MISSING:
@@ -247,6 +269,12 @@ class Client:
             else:
                 parameters['fields'] = ','.join(
                     [f.value for f in self._manga_fields])
+        # nsfw overrides the value stored in self.include_nsfw
+        if nsfw is MISSING:
+            if self.include_nsfw:
+                parameters['nsfw'] = 'true'
+        elif nsfw:
+            parameters['nsfw'] = 'true'
         return parameters
 
     def _build_list_paramenters(
@@ -255,7 +283,8 @@ class Client:
         *,
         limit: int = MISSING,
         fields: List[Field] = MISSING,
-        status: Union[AnimeListStatus, MangaListStatus, str] = MISSING
+        status: Union[AnimeListStatus, MangaListStatus, str] = MISSING,
+        nsfw: bool = MISSING
     ) -> Dict[str, str]:
         parameters: Dict[str, str] = {}
         if limit is not MISSING:
@@ -276,6 +305,12 @@ class Client:
             else:
                 value = status.value
             parameters['status'] = value
+        # nsfw overrides the value stored in self.include_nsfw
+        if nsfw is MISSING:
+            if self.include_nsfw:
+                parameters['nsfw'] = 'true'
+        elif nsfw:
+            parameters['nsfw'] = 'true'
         return parameters
 
     def _get_limit(self, endpoint: Endpoint, value: int) -> int:
