@@ -9,8 +9,8 @@ class BaseEnum(Enum):
     values some fields. Can be printed directly and can be compared with a string if needed.
 
     Example:
-    print(Field.id) ---> id
-    Field.id == 'id' ---> True
+        print(Field.id) ---> id
+        Field.id == 'id' ---> True
     """
 
     def __str__(self):
@@ -190,6 +190,7 @@ class Field(BaseEnum):
             List[Field]: converted fields
 
         Raises:
+            ValueError: one or more strings are not a valid field
         """
         return [Field[field] for field in fields]
 
@@ -206,6 +207,7 @@ class Field(BaseEnum):
 
     @classmethod
     def default_anime(cls) -> List[Field]:
+        """Default fields that are requested for an anime."""
         fields = cls.base() + [
             Field.num_episodes,
             Field.start_season,
@@ -216,6 +218,7 @@ class Field(BaseEnum):
 
     @classmethod
     def default_manga(cls) -> List[Field]:
+        """Default fields that are requested for a manga."""
         fields = cls.base() + [
             Field.num_chapters,
             Field.authors,
@@ -225,10 +228,12 @@ class Field(BaseEnum):
 
     @classmethod
     def all_anime(cls) -> List[Field]:
+        """All the fields that can be requested for an anime."""
         return [field for field in Field if field.is_anime]
 
     @classmethod
     def all_manga(cls) -> List[Field]:
+        """All the fields that can be requested for a manga."""
         return [field for field in Field if field.is_manga]
 
     # TODO: add more pre-made templates

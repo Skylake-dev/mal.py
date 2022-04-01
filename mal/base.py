@@ -43,12 +43,12 @@ class BaseResult:
 
     @property
     def title(self) -> str:
-        """Returns the title of the result. Shorthand for result.titles.title."""
+        """Title of the result. Shorthand for result.titles.title."""
         return self.titles.title
 
     @property
     def main_picture_url(self) -> str:
-        """Returns the URL to the highest resolution picture available for this title."""
+        """URL to the highest resolution picture available for this title."""
         # the API returns up to two pictures categorized as medium and large
         return self._main_picture['large'] or self._main_picture['medium']
 
@@ -77,21 +77,21 @@ class Related:
 
     @property
     def prequel(self) -> Optional[BaseResult]:
-        """Returns the list of prequels. If there aren't any returns None."""
+        """List of prequels. If there aren't any returns None."""
         if 'Prequel' in self._related:
             return self._related['Prequel'][0]
         return None
 
     @property
     def sequel(self) -> Optional[BaseResult]:
-        """Returns the list of sequels. If there aren't any returns None."""
+        """List of sequels. If there aren't any returns None."""
         if 'Sequel' in self._related:
             return self._related['Sequel'][0]
         return None
 
     @property
     def all(self) -> Dict[str, List[BaseResult]]:
-        """Returns all the available data."""
+        """All the available data."""
         return self._related
 
 
@@ -248,14 +248,14 @@ class ListStatus:
 
     @property
     def start_date(self) -> Optional[date]:
-        """Returns the ending date as a datetime.date."""
+        """The ending date as a datetime.date."""
         if self._start is not MISSING:
             return datetime.strptime(self._start, '%Y-%m-%d')
         return None
 
     @property
     def end_date(self) -> Optional[date]:
-        """Returns the ending date as a datetime.date."""
+        """The ending date as a datetime.date."""
         if self._end is not MISSING:
             return datetime.strptime(self._end, '%Y-%m-%d')
         return None

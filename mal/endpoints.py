@@ -7,9 +7,11 @@ BASE = 'https://api.myanimelist.net/v2'
 
 
 class Endpoint(Enum):
-    """Characterize the available endpoints. Each entry has two fields:
-        - url, contains the url to the endpoint
-        - limit. optional, contains the maximum value for the limit parameter for that endpoint.
+    """Characterize the available endpoints. Each entry has two fields: url and limit.
+
+    Attributes
+        url: contains the url to the endpoint
+        limit: optional, contains the maximum value for the limit parameter for that endpoint.
     """
     ANIME = (BASE + '/anime', 100)
     ANIME_RANKING = (BASE + '/anime/ranking', 500)

@@ -79,7 +79,7 @@ class Manga(Result):
 
 
 class MangaSearchResults:
-    """Container for manga search results."""
+    """Container for manga search results. Iterable and printable."""
 
     def __init__(self, data: MangaSearchPayload) -> None:
         self._results: List[Manga] = []
@@ -94,6 +94,19 @@ class MangaSearchResults:
 
 
 class MangaListEntryStatus(ListStatus):
+    """Represents the status for an entry in a user manga list.
+    Note that since this is marked by the user it can be inconsistent,
+    for example can be marked as completed even if the manga is not yet finished.
+
+    Attributes:
+        status: completed, plan_to_watch, etc
+        num_volumes_read: number of volumes that the user has read so far
+        num_chapters_read: number of chapters that the user has read so far
+        is_rereading: whether the user is rereading this series
+        num_times_reread: number of times the user has reread the series
+        rewatch_value: integer number quantifying the rewatch value
+    """
+
     def __init__(self, data: MangaListEntryStatusPayload) -> None:
         super().__init__(data)
         self.status: MangaListStatus = MangaListStatus(data.get('status'))
@@ -105,10 +118,18 @@ class MangaListEntryStatus(ListStatus):
 
     @property
     def completed(self) -> bool:
+        """True if the user has marked this series as completed."""
         return self.status is MangaListStatus('completed')
 
 
 class MangaListEntry(UserListEntry):
+    """Represents a row in the anime list.
+
+    Attributes:
+        entry: the anime of this entry
+        list_status: all the information about the status
+    """
+
     def __init__(self, data: MangaListEntryPayload) -> None:
         super().__init__(data)
         self.entry: Manga = Manga(data['node'])
@@ -117,6 +138,8 @@ class MangaListEntry(UserListEntry):
 
 
 class MangaList(UserList):
+    """Iterable object containing the manga list of a user."""
+
     def __init__(self, data: MangaListPayload) -> None:
         super().__init__(data)
         self._list: List[MangaListEntry] = []

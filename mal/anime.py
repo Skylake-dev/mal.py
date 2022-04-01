@@ -62,6 +62,7 @@ class Anime(Result):
 
     @property
     def start_season(self) -> str:
+        """The starting season, for example 'spring 2016'."""
         if self._start_season is not MISSING:
             season = self._start_season['season']
             year = self._start_season['year']
@@ -71,11 +72,12 @@ class Anime(Result):
 
     @property
     def studios(self) -> str:
+        """All the studios that were involved in the production."""
         return ', '.join(studio['name'] for studio in self._studios)
 
 
 class AnimeSearchResults:
-    """Container for anime search results."""
+    """Container for anime search results. Iterable and printable."""
 
     def __init__(self, data: AnimeSearchPayload) -> None:
         self._results: List[Anime] = []
@@ -90,6 +92,18 @@ class AnimeSearchResults:
 
 
 class AnimeListEntryStatus(ListStatus):
+    """Represents the status for an entry in a user anime list.
+    Note that since this is marked by the user it can be inconsistent,
+    for example can be marked as completed even if the anime is not yet finished.
+
+    Attributes:
+        status: completed, plan_to_watch, etc
+        num_episodes_watched: number of episodes that the user has seen so far
+        is_rewatching: whether the user is rewatching this series
+        num_times_rewatched: number of times the user has rewatched the series
+        rewatch_value: integer number quantifying the rewatch value
+    """
+
     def __init__(self, data: AnimeListEntryStatusPayload) -> None:
         super().__init__(data)
         self.status: AnimeListStatus = AnimeListStatus(data.get('status'))
@@ -100,10 +114,18 @@ class AnimeListEntryStatus(ListStatus):
 
     @property
     def completed(self) -> bool:
+        """True if the user has marked this series as completed."""
         return self.status is AnimeListStatus('completed')
 
 
 class AnimeListEntry(UserListEntry):
+    """Represents a row in the anime list.
+
+    Attributes:
+        entry: the anime of this entry
+        list_status: all the information about the status
+    """
+
     def __init__(self, data: AnimeListEntryPayload) -> None:
         super().__init__(data)
         self.entry: Anime = Anime(data['node'])
@@ -112,6 +134,8 @@ class AnimeListEntry(UserListEntry):
 
 
 class AnimeList(UserList):
+    """Iterable object containing the anime list of a user."""
+
     def __init__(self, data: AnimeListPayload) -> None:
         super().__init__(data)
         self._list: List[AnimeListEntry] = []

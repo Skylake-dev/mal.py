@@ -44,8 +44,7 @@ extensions = [
 
 autosummary_generate = True
 autodoc_default_options = {
-    'inherited-members': True,
-    'undoc-members': True
+    'inherited-members': True
 }
 autodoc_typehints_format = 'short'
 autodoc_member_order = 'bysource'

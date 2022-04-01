@@ -5,7 +5,7 @@ class Genre():
     """Represents a specific genre. It has two read only properties that are the
     id and the name of the genre.
 
-    Attributes
+    Attributes:
         id: The id of the genre.
         name: The name of the genre.
     """
