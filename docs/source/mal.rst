@@ -68,22 +68,6 @@ mal.titles module
    :undoc-members:
    :show-inheritance:
 
-mal.typed module
-----------------
-
-.. automodule:: mal.typed
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-mal.utils module
-----------------
-
-.. automodule:: mal.utils
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 Module contents
 ---------------
 
