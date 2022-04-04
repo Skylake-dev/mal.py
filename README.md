@@ -9,11 +9,11 @@ The objective for now is to cover queries for the publicly available information
 - anime and manga search given a keyword
 - fetch details of anime or manga given its id or its url
 - accessing public lists of users
+- retrieving seasonal anime
 
 The next features that are planned to be implemented are:
 
 - retrieve more information on recommendations and related entries
-- retrieving seasonal anime
 - retrieve rankings for anime and manga
 
 ## Installation
@@ -24,9 +24,9 @@ To use this library:
 
 - clone the repo
 - (optional) create a virtual environment `python -m venv .venv` and activate it
-- install with `pip install full/path/to/cloned/repo`  
+- install with `pip install full/path/to/cloned/repo`
   installation from pypi will be available once [this](https://github.com/pypa/pypi-support/issues/1800) is solved
-- to perform requests you need an API token  
+- to perform requests you need an API token
   log in on MAL -> account settings -> API -> create ID
 
 ## Usage

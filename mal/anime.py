@@ -44,8 +44,9 @@ class Anime(Result):
         _broadcast_info = payload.get('broadcast', MISSING)
         if _broadcast_info is not MISSING:
             self.broadcast_day: str = _broadcast_info['day_of_the_week']
+            # start_time can be missing
             self.broadcast_time: time = datetime.strptime(
-                _broadcast_info['start_time'], '%H:%M').time()
+                _broadcast_info.get('start_time', '00:00'), '%H:%M').time()
         else:
             self.broadcast_day: str = 'not requested'
             self.broadcast_time: time = datetime.strptime(
