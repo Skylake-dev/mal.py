@@ -5,7 +5,7 @@ from typing import List, Dict, Union
 from .endpoints import Endpoint
 from .anime import Anime, AnimeSearchResults, AnimeList
 from .manga import Manga, MangaSearchResults, MangaList
-from .enums import Field, AnimeListStatus, MangaListStatus
+from .enums import Field, AnimeListStatus, MangaListStatus, Season
 from .utils import MISSING
 
 
@@ -230,6 +230,42 @@ class Client:
         response = self._request(url, params=parameters)
         data = response.json()
         return MangaList(data)
+
+    def get_seasonal_anime(
+        self,
+        year: int,
+        season: Union[str, Season],
+        *,
+        limit: int = MISSING,
+        fields: List[Field] = MISSING,
+    ) -> List[Anime]:
+        """Returns the list of anime aired during a specific season.
+
+        Args:
+            year: the desired year
+            season: the desired season, can be winter, spring, summer or fall.
+                | In particular they correspond to specific months
+                | winter -> January, February, March
+                | spring -> April, May, June
+                | summer -> July, August, September
+                | fall -> October, November, December
+
+        Keyword args:
+            limit: set the number of entries to retrieve, defaults to 10
+            fields: set which fields to get for each entry
+
+        Returns:
+            List[Anime]: list containing the results
+        """
+        parameters = self._build_search_parameters(
+            Endpoint.ANIME_SEASONAL, limit=limit, fields=fields)
+        url = f'{Endpoint.ANIME_SEASONAL}/{year}/{season}'
+        response = self._request(url, params=parameters)
+        data = response.json()
+        results: List[Anime] = []
+        for node in data['data']:
+            results.append(Anime(node['node']))
+        return results
 
     def _request(self, url: str, params: Dict[str, str] = MISSING) -> requests.Response:
         """Handles all the requests that are made and checks the status code of the response.

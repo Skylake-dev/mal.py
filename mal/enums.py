@@ -83,6 +83,7 @@ class AdaptationFrom(BaseEnum):
     picture_book = 'picture_book'
     radio = 'radio'
     music = 'music'
+    web_novel = 'web_novel'
 
 
 class AnimeListStatus(BaseEnum):
@@ -99,6 +100,13 @@ class MangaListStatus(BaseEnum):
     on_hold = 'on_hold'
     plan_to_read = 'plan_to_read'
     reading = 'reading'
+
+
+class Season(BaseEnum):
+    winter = 'winter'
+    spring = 'spring'
+    summer = 'summer'
+    fall = 'fall'
 
 
 class Field(BaseEnum):

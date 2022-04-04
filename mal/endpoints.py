@@ -34,6 +34,9 @@ class Endpoint(Enum):
         self.url: str = url
         self.limit: int = limit
 
+    def __str__(self) -> str:
+        return self.url
+
     @property
     def is_anime(self) -> bool:
         anime_endpoints = [
