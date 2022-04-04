@@ -84,6 +84,7 @@ class AdaptationFrom(BaseEnum):
     radio = 'radio'
     music = 'music'
     web_novel = 'web_novel'
+    mixed_media = 'mixed_media'
 
 
 class AnimeListStatus(BaseEnum):

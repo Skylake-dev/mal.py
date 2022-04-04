@@ -207,3 +207,9 @@ class AnimeListPayload(TypedDict):
 class MangaListPayload(TypedDict):
     data: List[MangaListEntryPayload]
     paging: PagingPayload
+
+
+class SeasonalAnimePayload(TypedDict):
+    data: List[AnimeNodePayload]
+    paging: PagingPayload
+    season: SeasonPayload

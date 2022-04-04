@@ -11,7 +11,8 @@ from .typed import (
     SeasonPayload,
     AnimeListEntryPayload,
     AnimeListPayload,
-    AnimeListEntryStatusPayload
+    AnimeListEntryStatusPayload,
+    SeasonalAnimePayload
 )
 
 
@@ -145,3 +146,30 @@ class AnimeList(UserList):
 
     def __iter__(self) -> Iterator[AnimeListEntry]:
         return iter(self._list)
+
+
+class Seasonal:
+    """Container for seasonal anime searches."""
+
+    def __init__(self, data: SeasonalAnimePayload) -> None:
+        self._list: List[Anime] = []
+        for item in data['data']:
+            self._list.append(Anime(item['node']))
+        self.year: int = data['season']['year']
+        self.season: str = data['season']['season']
+
+    def __str__(self) -> str:
+        s = f'{self.season} {self.year} anime:\n'
+        s += '\n'.join([str(anime) for anime in self._list])
+        return s
+
+    def __len__(self) -> int:
+        return len(self._list)
+
+    def __iter__(self) -> Iterator[Anime]:
+        return iter(self._list)
+
+    @property
+    def season_info(self) -> str:
+        """Information obout the season."""
+        return f'{self.season} {self.year}, {len(self._list)} anime'
