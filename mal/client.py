@@ -1,6 +1,6 @@
 """Module in charge of making requests to the API and managing possible errors."""
 import requests
-from typing import List, Dict, Union
+from typing import List, Dict, Sequence, Union
 
 from .endpoints import Endpoint
 from .anime import Anime, AnimeSearchResults, AnimeList, AnimeRanking, Seasonal
@@ -42,8 +42,8 @@ class Client:
         return self._anime_fields
 
     @anime_fields.setter
-    def anime_fields(self, new_fields: List[Field]) -> None:
-        self._anime_fields = new_fields
+    def anime_fields(self, new_fields: Sequence[Union[Field, str]]) -> None:
+        self._anime_fields = Field.from_list(new_fields)
 
     @property
     def manga_fields(self) -> List[Field]:
@@ -54,8 +54,8 @@ class Client:
         return self._manga_fields
 
     @manga_fields.setter
-    def manga_fields(self, new_fields: List[Field]) -> None:
-        self._anime_fields = new_fields
+    def manga_fields(self, new_fields: Sequence[Union[Field, str]]) -> None:
+        self._manga_fields = Field.from_list(new_fields)
 
     @property
     def include_nsfw(self) -> bool:
@@ -74,7 +74,7 @@ class Client:
         query: str,
         *,
         limit: int = MISSING,
-        fields: List[Field] = MISSING,
+        fields: Sequence[Union[Field, str]] = MISSING,
         include_nsfw: bool = MISSING
     ) -> AnimeSearchResults:
         """Search anime matching the given query. By default it uses the default parameters
@@ -106,7 +106,7 @@ class Client:
         query: str,
         *,
         limit: int = MISSING,
-        fields: List[Field] = MISSING,
+        fields: Sequence[Union[Field, str]] = MISSING,
         include_nsfw: bool = MISSING
     ) -> MangaSearchResults:
         """Search manga matching the given query. By default it uses the default parameters
@@ -133,7 +133,7 @@ class Client:
         results = MangaSearchResults(data)
         return results
 
-    def get_anime(self, id: Union[int, str], *, fields: List[Field] = MISSING) -> Anime:
+    def get_anime(self, id: Union[int, str], *, fields: Sequence[Union[Field, str]] = MISSING) -> Anime:
         """Get the details for a specific anime given the id.
 
         Args:
@@ -152,7 +152,7 @@ class Client:
         data = response.json()
         return Anime(data)
 
-    def get_manga(self, id: Union[int, str], *, fields: List[Field] = MISSING) -> Manga:
+    def get_manga(self, id: Union[int, str], *, fields: Sequence[Union[Field, str]] = MISSING) -> Manga:
         """Get the details for a specific manga given the id.
 
         Args:
@@ -176,7 +176,7 @@ class Client:
         username: str,
         *,
         limit: int = MISSING,
-        fields: List[Field] = MISSING,
+        fields: Sequence[Union[Field, str]] = MISSING,
         status: Union[AnimeListStatus, str] = MISSING,
         include_nsfw: bool = MISSING
     ) -> AnimeList:
@@ -206,7 +206,7 @@ class Client:
         username: str,
         *,
         limit: int = MISSING,
-        fields: List[Field] = MISSING,
+        fields: Sequence[Union[Field, str]] = MISSING,
         status: Union[MangaListStatus, str] = MISSING,
         include_nsfw: bool = MISSING
     ) -> MangaList:
@@ -237,7 +237,7 @@ class Client:
         season: Union[str, Season],
         *,
         limit: int = MISSING,
-        fields: List[Field] = MISSING,
+        fields: Sequence[Union[Field, str]] = MISSING,
     ) -> Seasonal:
         """Returns the list of anime aired during a specific season.
 
@@ -271,7 +271,7 @@ class Client:
         *,
         ranking_type: Union[str, AnimeRankingType] = AnimeRankingType.all,
         limit: int = MISSING,
-        fields: List[Field] = MISSING
+        fields: Sequence[Union[Field, str]] = MISSING
     ) -> AnimeRanking:
         """Returns the top anime in the rankings.
 
@@ -302,7 +302,7 @@ class Client:
         *,
         ranking_type: Union[str, MangaRankingType] = MangaRankingType.all,
         limit: int = MISSING,
-        fields: List[Field] = MISSING
+        fields: Sequence[Union[Field, str]] = MISSING
     ) -> MangaRanking:
         """Returns the top manga in the rankings.
 
@@ -344,7 +344,7 @@ class Client:
         endpoint: Endpoint,
         *,
         limit: int = MISSING,
-        fields: List[Field] = MISSING,
+        fields: Sequence[Union[Field, str]] = MISSING,
         nsfw: bool = MISSING
     ) -> Dict[str, str]:
         parameters: Dict[str, str] = {}
@@ -353,12 +353,13 @@ class Client:
         else:
             parameters['limit'] = str(self._search_limit)
         if fields is not MISSING:
+            parsed_fields = Field.from_list(fields)
             if endpoint.is_anime:
                 parameters['fields'] = ','.join(
-                    [f.value for f in fields if f.is_anime])
+                    [f.value for f in parsed_fields if f.is_anime])
             else:
                 parameters['fields'] = ','.join(
-                    [f.value for f in fields if f.is_manga])
+                    [f.value for f in parsed_fields if f.is_manga])
         else:
             if endpoint.is_anime:
                 parameters['fields'] = ','.join(
@@ -379,7 +380,7 @@ class Client:
         endpoint: Endpoint,
         *,
         limit: int = MISSING,
-        fields: List[Field] = MISSING,
+        fields: Sequence[Union[Field, str]] = MISSING,
         status: Union[AnimeListStatus, MangaListStatus, str] = MISSING,
         nsfw: bool = MISSING
     ) -> Dict[str, str]:
@@ -387,12 +388,13 @@ class Client:
         if limit is not MISSING:
             parameters['limit'] = str(self._get_limit(endpoint, limit))
         if fields is not MISSING:
+            parsed_fields = Field.from_list(fields)
             if endpoint.is_anime:
                 parameters['fields'] = ','.join(
-                    [f.value for f in fields if f.is_anime])
+                    [f.value for f in parsed_fields if f.is_anime])
             else:
                 parameters['fields'] = ','.join(
-                    [f.value for f in fields if f.is_manga])
+                    [f.value for f in parsed_fields if f.is_manga])
             parameters['fields'] += ',list_status'
         else:
             parameters['fields'] = 'list_status'

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import List
+from typing import List, Sequence, Union
 
 
 class BaseEnum(Enum):
@@ -214,7 +214,7 @@ class Field(BaseEnum):
         return self in self.manga_fields
 
     @classmethod
-    def from_list(cls, fields: List[str]) -> List[Field]:
+    def from_list(cls, fields: Sequence[Union[str, Field]]) -> List[Field]:
         """Returns the list of fields from the corresponding string representation.
 
         Args:
@@ -226,7 +226,12 @@ class Field(BaseEnum):
         Raises:
             ValueError: one or more strings are not a valid field
         """
-        return [Field[field] for field in fields]
+        result: List[Field] = []
+        for field in fields:
+            if isinstance(field, str):
+                field = Field[field]
+            result.append(field)
+        return result
 
     @classmethod
     def base(cls) -> List[Field]:
