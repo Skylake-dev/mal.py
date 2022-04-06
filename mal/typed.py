@@ -123,6 +123,9 @@ class MangaPayload(ResultPayload, total=False):
 
 
 # Related to search results
+class NodePayload(TypedDict):
+    node: ResultPayload
+
 
 class AnimeNodePayload(TypedDict):
     node: AnimePayload
@@ -213,3 +216,42 @@ class SeasonalAnimePayload(TypedDict):
     data: List[AnimeNodePayload]
     paging: PagingPayload
     season: SeasonPayload
+
+
+class _RankPayload(TypedDict):
+    rank: int
+
+
+class RankPayload(_RankPayload, total=False):
+    # specify that only previous_rank is optional
+    previous_rank: int
+
+
+class RankingNodePayload(TypedDict):
+    node: ResultPayload
+    ranking: RankPayload
+
+
+class AnimeRankingNodePayload(TypedDict):
+    node: AnimePayload
+    ranking: RankPayload
+
+
+class MangaRankingNodePayload(TypedDict):
+    node: MangaPayload
+    ranking: RankPayload
+
+
+class RankingPayload(TypedDict):
+    data: List[RankingNodePayload]
+    paging: PagingPayload
+
+
+class AnimeRankingPayload(TypedDict):
+    data: List[AnimeRankingNodePayload]
+    paging: PagingPayload
+
+
+class MangaRankingPayload(TypedDict):
+    data: List[MangaRankingNodePayload]
+    paging: PagingPayload

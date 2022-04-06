@@ -110,6 +110,30 @@ class Season(BaseEnum):
     fall = 'fall'
 
 
+class AnimeRankingType(BaseEnum):
+    all = 'all'
+    airing = 'airing'
+    upcoming = 'upcoming'
+    tv = 'tv'
+    ova = 'ova'
+    movie = 'movie'
+    special = 'special'
+    by_popularity = 'bypopularity'
+    favorite = 'favorite'
+
+
+class MangaRankingType(BaseEnum):
+    all = 'all'
+    manga = 'manga'
+    novels = 'novels'
+    oneshots = 'oneshots'
+    douhin = 'doujin'
+    manhwa = 'manhwa'
+    manhua = 'manhua'
+    by_popularity = 'bypopularity'
+    favorite = 'favorite'
+
+
 class Field(BaseEnum):
     # Common fields for anime and manga
     id = 'id'

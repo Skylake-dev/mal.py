@@ -1,9 +1,9 @@
 from datetime import datetime, time
-from typing import List, Iterator, Optional
+from typing import Dict, List, Iterator, Optional, Union
 
 from .utils import MISSING
-from .enums import AdaptationFrom, AnimeStatus, AnimeMediaType, AnimeListStatus
-from .base import Result, UserListEntry, UserList, ListStatus
+from .enums import AdaptationFrom, AnimeStatus, AnimeMediaType, AnimeListStatus, AnimeRankingType
+from .base import Result, UserListEntry, UserList, ListStatus, Ranking
 from .typed import (
     AnimePayload,
     AnimeSearchPayload,
@@ -12,6 +12,7 @@ from .typed import (
     AnimeListEntryPayload,
     AnimeListPayload,
     AnimeListEntryStatusPayload,
+    AnimeRankingPayload,
     SeasonalAnimePayload
 )
 
@@ -146,6 +147,33 @@ class AnimeList(UserList):
 
     def __iter__(self) -> Iterator[AnimeListEntry]:
         return iter(self._list)
+
+
+class AnimeRanking(Ranking):
+    """Container for anime rankings.
+
+    Attributes:
+        type: the criterion of this ranking
+    """
+
+    def __init__(self, data: AnimeRankingPayload, type: Union[str, AnimeRankingType]) -> None:
+        self._ranking: Dict[int, Anime] = {}
+        for node in data['data']:
+            self._ranking[node['ranking']['rank']] = Anime(node['node'])
+        if isinstance(type, str):
+            type = AnimeRankingType(type)
+        self.type: AnimeRankingType = type
+
+    def get(self, rank: int) -> Anime:
+        """Returns the entry corresponding to the given rank.
+
+        Args:
+            rank: the rank of the entry to get
+
+        Raises:
+            KeyError: the rank is not present
+        """
+        return self._ranking[rank]
 
 
 class Seasonal:

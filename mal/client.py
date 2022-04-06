@@ -3,9 +3,9 @@ import requests
 from typing import List, Dict, Union
 
 from .endpoints import Endpoint
-from .anime import Anime, AnimeSearchResults, AnimeList, Seasonal
-from .manga import Manga, MangaSearchResults, MangaList
-from .enums import Field, AnimeListStatus, MangaListStatus, Season
+from .anime import Anime, AnimeSearchResults, AnimeList, AnimeRanking, Seasonal
+from .manga import Manga, MangaSearchResults, MangaList, MangaRanking
+from .enums import Field, AnimeListStatus, MangaListStatus, Season, AnimeRankingType, MangaRankingType
 from .utils import MISSING
 
 
@@ -265,6 +265,68 @@ class Client:
         data = response.json()
         results: Seasonal = Seasonal(data)
         return results
+
+    def get_anime_ranking(
+        self,
+        *,
+        ranking_type: Union[str, AnimeRankingType] = AnimeRankingType.all,
+        limit: int = MISSING,
+        fields: List[Field] = MISSING
+    ) -> AnimeRanking:
+        """Returns the top anime in the rankings.
+
+        Keyword args:
+            ranking_type: the type of ranking to request, defaults to all.
+                For all possible values see enums.AnimeRanking
+            limit: numbers of entries to request
+            fields: set which fields to get for each entry
+
+        Returns:
+            AnimeRanking: the results
+
+        Raises:
+            ValueError: ranking_type is invalid, check AnimeRankingType for all options
+        """
+        parameters = self._build_search_parameters(
+            Endpoint.ANIME_RANKING, limit=limit, fields=fields)
+        if isinstance(ranking_type, str):
+            ranking_type = AnimeRankingType(ranking_type)
+        parameters['ranking_type'] = f'{ranking_type}'
+        url: str = Endpoint.ANIME_RANKING.url
+        response = self._request(url, params=parameters)
+        data = response.json()
+        return AnimeRanking(data, ranking_type)
+
+    def get_manga_ranking(
+        self,
+        *,
+        ranking_type: Union[str, MangaRankingType] = MangaRankingType.all,
+        limit: int = MISSING,
+        fields: List[Field] = MISSING
+    ) -> MangaRanking:
+        """Returns the top manga in the rankings.
+
+        Keyword args:
+            ranking_type: the type of ranking to request, defaults to all.
+                For all possible values see enums.MangaRanking
+            limit: numbers of entries to request
+            fields: set which fields to get for each entry
+
+        Returns:
+            MangaRanking: the results
+
+        Raises:
+            ValueError: ranking_type is invalid, check MangaRankingType for all options
+        """
+        parameters = self._build_search_parameters(
+            Endpoint.MANGA_RANKING, limit=limit, fields=fields)
+        if isinstance(ranking_type, str):
+            ranking_type = MangaRankingType(ranking_type)
+        parameters['ranking_type'] = f'{ranking_type}'
+        url: str = Endpoint.MANGA_RANKING.url
+        response = self._request(url, params=parameters)
+        data = response.json()
+        return MangaRanking(data, ranking_type)
 
     def _request(self, url: str, params: Dict[str, str] = MISSING) -> requests.Response:
         """Handles all the requests that are made and checks the status code of the response.

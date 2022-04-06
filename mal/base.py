@@ -15,7 +15,8 @@ from .typed import (
     ListStatusPayload,
     ListEntryPayload,
     AnimeListPayload,
-    MangaListPayload
+    MangaListPayload,
+    RankingPayload
 )
 
 
@@ -294,3 +295,20 @@ class UserList:
 
     def __str__(self) -> str:
         return '\n'.join([str(item) for item in self._list])
+
+
+class Ranking:
+    """Base for representing ranking results."""
+
+    def __init__(self, data: RankingPayload, type: Any) -> None:
+        # initialized in subclasses
+        self._ranking: Dict[int, Any]
+        self.type = type
+
+    def __len__(self) -> int:
+        return len(self._ranking)
+
+    def __str__(self) -> str:
+        s = f'Ranking by {self.type}\n'
+        s += '\n'.join([f'{rank} - {self._ranking[rank]}' for rank in self._ranking])
+        return s

@@ -1,7 +1,7 @@
-from typing import List, Iterator, Optional
+from typing import Dict, List, Iterator, Optional, Union
 
-from .enums import MangaStatus, MangaMediaType, MangaListStatus
-from .base import Result, ListStatus, UserListEntry, UserList
+from .enums import MangaStatus, MangaMediaType, MangaListStatus, MangaRankingType
+from .base import Result, ListStatus, UserListEntry, UserList, Ranking
 from .typed import (
     AuthorPayload,
     GenericPayload,
@@ -9,7 +9,8 @@ from .typed import (
     MangaSearchPayload,
     MangaListEntryPayload,
     MangaListEntryStatusPayload,
-    MangaListPayload
+    MangaListPayload,
+    MangaRankingPayload
 )
 
 
@@ -123,10 +124,10 @@ class MangaListEntryStatus(ListStatus):
 
 
 class MangaListEntry(UserListEntry):
-    """Represents a row in the anime list.
+    """Represents a row in the manga list.
 
     Attributes:
-        entry: the anime of this entry
+        entry: the manga of this entry
         list_status: all the information about the status
     """
 
@@ -148,3 +149,30 @@ class MangaList(UserList):
 
     def __iter__(self) -> Iterator[MangaListEntry]:
         return iter(self._list)
+
+
+class MangaRanking(Ranking):
+    """Container for manga rankings.
+
+    Attributes:
+        type: the criterion of this ranking
+    """
+
+    def __init__(self, data: MangaRankingPayload, type: Union[str, MangaRankingType]) -> None:
+        self._ranking: Dict[int, Manga] = {}
+        for node in data['data']:
+            self._ranking[node['ranking']['rank']] = Manga(node['node'])
+        if isinstance(type, str):
+            type = MangaRankingType(type)
+        self.type: MangaRankingType = type
+
+    def get(self, rank: int) -> Manga:
+        """Returns the entry corresponding to the given rank.
+
+        Args:
+            rank: the rank of the entry to get
+
+        Raises:
+            KeyError: the rank is not present
+        """
+        return self._ranking[rank]
