@@ -48,6 +48,7 @@ class MangaStatus(BaseEnum):
     finished = 'finished'
     not_published = 'not_yet_published'
     publishing = 'currently_publishing'
+    on_hiatus = 'on_hiatus'
 
 
 class MangaMediaType(BaseEnum):
