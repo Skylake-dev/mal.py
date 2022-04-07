@@ -7,4 +7,3 @@ docs/build/
 build/
 dist/
 **.egg-info/
-*.ipynb
