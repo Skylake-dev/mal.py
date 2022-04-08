@@ -36,12 +36,13 @@ from mal import client
 
 cli = client.Client('your token here')
 
-# see client docstrings for more information on the methods
 anime = cli.get_anime(16498)
 anime.title
 >> Shingeki_no_Kyojin
 ```
 
 Full documentation available [here](https://malpy.readthedocs.io/en/latest/index.html).
+
+Code samples can be found in the examples folder.
 
 This project is still a work in progress, if you have problems or find bugs feel free to open an issue or start a discussion.
