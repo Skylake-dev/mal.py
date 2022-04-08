@@ -20,7 +20,7 @@ Introduction
 ------------
 
 Start by installing the library on your system, the use of a
-virtual environment is recommended (see :doc:`py:tutorial/venv`):
+virtual environment is recommended (see `Virtual Environments and Packages <https://docs.python.org/3/tutorial/venv.html>`_):
 
 - clone the repository
 
