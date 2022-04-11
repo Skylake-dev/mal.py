@@ -186,10 +186,16 @@ class Result(BaseResult):
                 start_date = datetime.date(
                     datetime.strptime(self._start, '%Y-%m-%d'))
             except ValueError:
-                start_date = datetime.strptime(self._start, '%Y')
-                start_date = start_date.year
+                try:
+                    start_date = datetime.date(
+                        datetime.strptime(self._start, '%Y-%m'))
+                except ValueError:
+                    start_date = datetime.strptime(self._start, '%Y')
+                    start_date = start_date.year
+                finally:
+                    return start_date  # type: ignore
             finally:
-                return start_date   # type: ignore
+                return start_date  # type: ignore
         return None
 
     @property
