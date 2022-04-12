@@ -238,6 +238,7 @@ class Client:
         *,
         limit: int = MISSING,
         fields: Sequence[Union[Field, str]] = MISSING,
+        include_nsfw: bool = MISSING
     ) -> Seasonal:
         """Returns the list of anime aired during a specific season.
 
@@ -253,12 +254,13 @@ class Client:
         Keyword args:
             limit: set the number of entries to retrieve, defaults to 10
             fields: set which fields to get for each entry
+            include_nsfw: include results marked as nsfw
 
         Returns:
             Seasonal: container for the results, sorted by score
         """
         parameters = self._build_search_parameters(
-            Endpoint.ANIME_SEASONAL, limit=limit, fields=fields)
+            Endpoint.ANIME_SEASONAL, limit=limit, fields=fields, nsfw=include_nsfw)
         parameters['sort'] = 'anime_score'  # TODO: make it customizable
         url = f'{Endpoint.ANIME_SEASONAL}/{year}/{season}'
         response = self._request(url, params=parameters)
