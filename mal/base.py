@@ -57,7 +57,8 @@ class BaseResult:
 class Related:
     """Represents related anime or manga.
 
-    For now it just returns returns a string with all the pairs relation: title.
+    Printing it returns a string with all the pairs relation: title.
+    Can return prequel, sequel and access to all the entries.
     """
 
     def __init__(self, data: Sequence[RelationPayload]) -> None:
@@ -78,21 +79,21 @@ class Related:
 
     @property
     def prequel(self) -> Optional[BaseResult]:
-        """List of prequels. If there aren't any returns None."""
+        """Prequel for this title. If there isn't any returns None."""
         if 'Prequel' in self._related:
             return self._related['Prequel'][0]
         return None
 
     @property
     def sequel(self) -> Optional[BaseResult]:
-        """List of sequels. If there aren't any returns None."""
+        """Sequel for this title. If there isn't any returns None."""
         if 'Sequel' in self._related:
             return self._related['Sequel'][0]
         return None
 
     @property
     def all(self) -> Dict[str, List[BaseResult]]:
-        """All the available data."""
+        """All the available data returned as a dictionary."""
         return self._related
 
 
@@ -110,6 +111,9 @@ class Recommendation:
                 (entry['num_recommendations'], BaseResult(entry['node'])))
         # sort by the number of people who recommended a specific title
         self._recommendations.sort(key=lambda x: x[0], reverse=True)
+
+    def __len__(self) -> int:
+        return len(self._recommendations)
 
     def __str__(self) -> str:
         s = f''
@@ -298,6 +302,9 @@ class UserList:
     def __init__(self, data: Union[AnimeListPayload, MangaListPayload]) -> None:
         # initialized in subclass to avoid doing it twice
         self._list: Sequence[UserListEntry]
+
+    def __len__(self) -> int:
+        return len(self._list)
 
     def __str__(self) -> str:
         return '\n'.join([str(item) for item in self._list])
