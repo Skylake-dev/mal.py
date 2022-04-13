@@ -1,9 +1,9 @@
 """Support classes for type hinting."""
-from typing import List, TypedDict
+from typing import Sequence, TypedDict
 
 
 class TitlesPayload(TypedDict, total=False):
-    synonyms: List[str]
+    synonyms: Sequence[str]
     en: str
     ja: str
 
@@ -96,12 +96,12 @@ class ResultPayload(BaseResultPayload, total=False):
     updated_at: str
     media_type: str
     status: str
-    genres: List[GenericPayload]
-    pictures: List[PicturePayload]
+    genres: Sequence[GenericPayload]
+    pictures: Sequence[PicturePayload]
     background: str
-    related_anime: List[RelationPayload]
-    related_manga: List[RelationPayload]
-    recommendations: List[RecommendationPayload]
+    related_anime: Sequence[RelationPayload]
+    related_manga: Sequence[RelationPayload]
+    recommendations: Sequence[RecommendationPayload]
 
 
 class AnimePayload(ResultPayload, total=False):
@@ -111,15 +111,15 @@ class AnimePayload(ResultPayload, total=False):
     source: str
     average_episode_duration: int
     rating: str
-    studios: List[GenericPayload]
+    studios: Sequence[GenericPayload]
     statistics: StatisticsPayload
 
 
 class MangaPayload(ResultPayload, total=False):
-    authors: List[AuthorPayload]
+    authors: Sequence[AuthorPayload]
     num_chapters: int
     num_volumes: int
-    serialization: List[SerializationPayload]
+    serialization: Sequence[SerializationPayload]
 
 
 # Related to search results
@@ -142,12 +142,12 @@ class PagingPayload(TypedDict, total=False):
 
 
 class AnimeSearchPayload(TypedDict):
-    data: List[AnimeNodePayload]
+    data: Sequence[AnimeNodePayload]
     paging: PagingPayload
 
 
 class MangaSearchPayload(TypedDict):
-    data: List[MangaNodePayload]
+    data: Sequence[MangaNodePayload]
     paging: PagingPayload
 
 
@@ -159,7 +159,7 @@ class ListStatusPayload(TypedDict, total=False):
     start_date: str
     finish_date: str
     priority: int
-    tags: List[str]
+    tags: Sequence[str]
     comments: str
     updated_at: str
 
@@ -198,22 +198,22 @@ class MangaListEntryPayload(TypedDict):
 
 
 class ListPayload(TypedDict):
-    data: List[ListEntryPayload]
+    data: Sequence[ListEntryPayload]
     paging: PagingPayload
 
 
 class AnimeListPayload(TypedDict):
-    data: List[AnimeListEntryPayload]
+    data: Sequence[AnimeListEntryPayload]
     paging: PagingPayload
 
 
 class MangaListPayload(TypedDict):
-    data: List[MangaListEntryPayload]
+    data: Sequence[MangaListEntryPayload]
     paging: PagingPayload
 
 
 class SeasonalAnimePayload(TypedDict):
-    data: List[AnimeNodePayload]
+    data: Sequence[AnimeNodePayload]
     paging: PagingPayload
     season: SeasonPayload
 
@@ -243,15 +243,15 @@ class MangaRankingNodePayload(TypedDict):
 
 
 class RankingPayload(TypedDict):
-    data: List[RankingNodePayload]
+    data: Sequence[RankingNodePayload]
     paging: PagingPayload
 
 
 class AnimeRankingPayload(TypedDict):
-    data: List[AnimeRankingNodePayload]
+    data: Sequence[AnimeRankingNodePayload]
     paging: PagingPayload
 
 
 class MangaRankingPayload(TypedDict):
-    data: List[MangaRankingNodePayload]
+    data: Sequence[MangaRankingNodePayload]
     paging: PagingPayload

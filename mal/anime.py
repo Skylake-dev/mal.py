@@ -1,5 +1,5 @@
 from datetime import datetime, time
-from typing import Dict, List, Iterator, Optional, Union
+from typing import Dict, List, Iterator, Optional, Sequence, Union
 
 from .utils import MISSING
 from .enums import AdaptationFrom, AnimeStatus, AnimeMediaType, AnimeListStatus, AnimeRankingType
@@ -59,7 +59,7 @@ class Anime(Result):
         self.average_episode_duration: int = payload.get(
             'average_episode_duration', 0)
         self.rating: str = payload.get('rating', 'not requested')
-        self._studios: List[GenericPayload] = payload.get('studios', [])
+        self._studios: Sequence[GenericPayload] = payload.get('studios', [])
         self._start_season: SeasonPayload = payload.get(
             'start_season', MISSING)
 
@@ -130,7 +130,6 @@ class AnimeListEntry(UserListEntry):
     """
 
     def __init__(self, data: AnimeListEntryPayload) -> None:
-        super().__init__(data)
         self.entry: Anime = Anime(data['node'])
         self.list_status: AnimeListEntryStatus = AnimeListEntryStatus(
             data['list_status'])
@@ -140,7 +139,6 @@ class AnimeList(UserList):
     """Iterable object containing the anime list of a user."""
 
     def __init__(self, data: AnimeListPayload) -> None:
-        super().__init__(data)
         self._list: List[AnimeListEntry] = []
         for item in data['data']:
             self._list.append(AnimeListEntry(item))

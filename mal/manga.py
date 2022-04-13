@@ -132,7 +132,6 @@ class MangaListEntry(UserListEntry):
     """
 
     def __init__(self, data: MangaListEntryPayload) -> None:
-        super().__init__(data)
         self.entry: Manga = Manga(data['node'])
         self.list_status: MangaListEntryStatus = MangaListEntryStatus(
             data['list_status'])
@@ -142,7 +141,6 @@ class MangaList(UserList):
     """Iterable object containing the manga list of a user."""
 
     def __init__(self, data: MangaListPayload) -> None:
-        super().__init__(data)
         self._list: List[MangaListEntry] = []
         for item in data['data']:
             self._list.append(MangaListEntry(item))

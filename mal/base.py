@@ -1,6 +1,6 @@
 """Contains the definitions for the base classes used in other modules."""
 from datetime import datetime, date
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Union
 
 from .utils import MISSING
 from .titles import Titles
@@ -60,7 +60,7 @@ class Related:
     For now it just returns returns a string with all the pairs relation: title.
     """
 
-    def __init__(self, data: List[RelationPayload]) -> None:
+    def __init__(self, data: Sequence[RelationPayload]) -> None:
         self._related: Dict[str, List[BaseResult]] = {}
         for entry in data:
             key = entry['relation_type_formatted']
@@ -103,8 +103,8 @@ class Recommendation:
     of users who gave it.
     """
 
-    def __init__(self, data: List[RecommendationPayload]) -> None:
-        self._recommendations: List[tuple[int, BaseResult]] = []
+    def __init__(self, data: Sequence[RecommendationPayload]) -> None:
+        self._recommendations: Sequence[tuple[int, BaseResult]] = []
         for entry in data:
             self._recommendations.append(
                 (entry['num_recommendations'], BaseResult(entry['node'])))
@@ -297,7 +297,7 @@ class UserList:
 
     def __init__(self, data: Union[AnimeListPayload, MangaListPayload]) -> None:
         # initialized in subclass to avoid doing it twice
-        self._list: List[Any]
+        self._list: Sequence[UserListEntry]
 
     def __str__(self) -> str:
         return '\n'.join([str(item) for item in self._list])
@@ -308,7 +308,7 @@ class Ranking:
 
     def __init__(self, data: RankingPayload, type: Any) -> None:
         # initialized in subclasses
-        self._ranking: Dict[int, Any]
+        self._ranking: Mapping[int, Result]
         self.type = type
 
     def __len__(self) -> int:

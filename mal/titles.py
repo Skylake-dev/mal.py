@@ -1,7 +1,7 @@
 from .utils import MISSING
 from .typed import TitlesPayload
 
-from typing import List, Optional
+from typing import Sequence, Optional
 
 
 class Titles:
@@ -18,7 +18,8 @@ class Titles:
     def __init__(self, title: str, payload: TitlesPayload):
         self.title: str = title
         if payload is not MISSING:
-            self.synonyms: Optional[List[str]] = payload.get('synonyms', [])
+            self.synonyms: Optional[Sequence[str]
+                                    ] = payload.get('synonyms', [])
             self.en_title: Optional[str] = payload.get(
                 'en', 'english title not present.')
             self.ja_title: Optional[str] = payload.get(
