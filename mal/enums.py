@@ -171,8 +171,10 @@ class Field(BaseEnum):
     rating = 'rating'
     studios = 'studios'                     # can be empty
     # can be inconsistent e.g. some users can mark it
-    statistics = 'statistics'
     # as completed even if not aired
+    statistics = 'statistics'
+    opening_themes = 'opening_themes'
+    ending_themes = 'ending_themes'
     # Manga only fields
     authors = 'authors'
     num_chapters = 'num_chapters'           # 0 if not completed
@@ -205,7 +207,9 @@ class Field(BaseEnum):
             self.average_episode_duration,
             self.rating,
             self.studios,
-            self.statistics
+            self.statistics,
+            self.opening_themes,
+            self.ending_themes
         ]
         return [field for field in Field if not field in forbidden]
 

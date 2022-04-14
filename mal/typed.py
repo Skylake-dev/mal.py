@@ -64,6 +64,12 @@ class StatisticsPayload(TypedDict):
     num_list_users: int
 
 
+class MusicPayload(TypedDict):
+    id: int
+    anime_id: int
+    text: str
+
+
 class PersonPayload(TypedDict, total=False):
     id: int
     first_name: str
@@ -113,6 +119,8 @@ class AnimePayload(ResultPayload, total=False):
     rating: str
     studios: Sequence[GenericPayload]
     statistics: StatisticsPayload
+    opening_themes: Sequence[MusicPayload]
+    ending_themes: Sequence[MusicPayload]
 
 
 class MangaPayload(ResultPayload, total=False):

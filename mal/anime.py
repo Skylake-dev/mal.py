@@ -13,8 +13,46 @@ from .typed import (
     AnimeListPayload,
     AnimeListEntryStatusPayload,
     AnimeRankingPayload,
-    SeasonalAnimePayload
+    SeasonalAnimePayload,
+    MusicPayload
 )
+
+
+class Song:
+    """Represents a single song for an anime
+
+    Attributes:
+        id: the id of this song in the MAL database
+        description: string containing title author and episodes where this
+            theme was used
+    """
+
+    def __init__(self, data: MusicPayload) -> None:
+        self.id: int = data['id']
+        self.description: str = data['text']
+
+    def __str__(self) -> str:
+        return f'{self.id} - {self.description}'
+
+
+class Music:
+    """Represents opening or ending themes for an anime.
+    Iterate over this to get all songs.
+    """
+
+    def __init__(self, data: Sequence[MusicPayload]) -> None:
+        self._data: List[Song] = []
+        for song in data:
+            self._data.append(Song(song))
+
+    def __iter__(self) -> Iterator[Song]:
+        return iter(self._data)
+
+    def __len__(self) -> int:
+        return len(self._data)
+
+    def __str__(self) -> str:
+        return '\n'.join(str(song) for song in self._data)
 
 
 class Anime(Result):
@@ -31,6 +69,8 @@ class Anime(Result):
         source: from where the anime was adapted or if it is an original, None if not requested
         average_episode_duration: duration of the episodes in seconds
         rating: pg rating of the anime
+        openings: opening themes used for this anime, None if not requested
+        endings: ending themes used for this anime, None if not requested
     """
 
     def __init__(self, payload: AnimePayload):
@@ -62,6 +102,12 @@ class Anime(Result):
         self._studios: Sequence[GenericPayload] = payload.get('studios', [])
         self._start_season: SeasonPayload = payload.get(
             'start_season', MISSING)
+        _openings = payload.get('opening_themes')
+        self.openings: Optional[Music] = Music(
+            _openings) if _openings else None
+        _endings = payload.get('ending_themes')
+        self.endings: Optional[Music] = Music(
+            _endings) if _endings else None
 
     @property
     def start_season(self) -> str:
