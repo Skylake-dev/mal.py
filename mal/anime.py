@@ -78,6 +78,11 @@ class Anime(Result):
         """All the studios that were involved in the production."""
         return ', '.join(studio['name'] for studio in self._studios)
 
+    @property
+    def url(self) -> str:
+        """URL to the MAL page for this anime."""
+        return f'https://myanimelist.net/anime/{self.id}'
+
 
 class AnimeSearchResults:
     """Container for anime search results. Iterable and printable."""

@@ -78,6 +78,11 @@ class Manga(Result):
         """Magazines or other formats where the series is published."""
         return ', '.join(mag['name'] for mag in self._serialization)
 
+    @property
+    def url(self) -> str:
+        """URL to the MAL page for this manga."""
+        return f'https://myanimelist.net/manga/{self.id}'
+
 
 class MangaSearchResults:
     """Container for manga search results. Iterable and printable."""
