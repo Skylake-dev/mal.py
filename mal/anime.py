@@ -14,7 +14,8 @@ from .typed import (
     AnimeListEntryStatusPayload,
     AnimeRankingPayload,
     SeasonalAnimePayload,
-    MusicPayload
+    MusicPayload,
+    StatisticsPayload
 )
 
 
@@ -55,6 +56,32 @@ class Music:
         return '\n'.join(str(song) for song in self._data)
 
 
+class Statistics:
+    """Current statistics for this anime.
+
+    Attributes:
+        watching: number of people who have this title marked as 'watching'
+        completed: number of people who have this title marked as 'completed'
+        on_hold: number of people who have this title marked as 'on_hold'
+        dropped: number of people who have this title marked as 'dropped'
+        plan_to_watch: number of people who have this title marked as 'plan_to_watch'
+        total_users: total number of people who have this title in their list and it
+            is equal to the sum of all the other attributes
+    """
+
+    def __init__(self, data: StatisticsPayload) -> None:
+        self.watching: int = int(data['status']['watching'])
+        self.completed: int = int(data['status']['completed'])
+        self.on_hold: int = int(data['status']['on_hold'])
+        self.dropped: int = int(data['status']['dropped'])
+        self.plan_to_watch: int = int(data['status']['plan_to_watch'])
+        self.total_users: int = int(data['num_list_users'])
+
+    def __str__(self) -> str:
+        values = vars(self)
+        return '\n'.join(f'{attr}: {values[attr]}' for attr in values)
+
+
 class Anime(Result):
     """Represents a full Anime object with all the possible fields.
     If some fields were excluded from the query then None or a default value
@@ -71,6 +98,8 @@ class Anime(Result):
         rating: pg rating of the anime
         openings: opening themes used for this anime, None if not requested
         endings: ending themes used for this anime, None if not requested
+        statistics: information about how many people have completed this, watching, etc, None
+            if not requested
     """
 
     def __init__(self, payload: AnimePayload):
@@ -108,6 +137,9 @@ class Anime(Result):
         _endings = payload.get('ending_themes')
         self.endings: Optional[Music] = Music(
             _endings) if _endings else None
+        _stats = payload.get('statistics')
+        self.statistics: Optional[Statistics] = Statistics(
+            _stats) if _stats else None
 
     @property
     def start_season(self) -> str:

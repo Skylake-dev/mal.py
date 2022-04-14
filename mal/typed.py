@@ -51,6 +51,10 @@ class RecommendationPayload(TypedDict):
 class AnimeStatusPayload(TypedDict):
     # this should all be int but the json parser of requests gets them as str
     # need to convert them to int before using
+    # note to self:
+    #    the parser gets these as str instead of int because they are returned
+    #    as strings by the api, for example
+    #    "watching": "12345"
     watching: str
     completed: str
     on_hold: str
