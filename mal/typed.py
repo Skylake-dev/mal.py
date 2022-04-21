@@ -267,3 +267,20 @@ class AnimeRankingPayload(TypedDict):
 class MangaRankingPayload(TypedDict):
     data: Sequence[MangaRankingNodePayload]
     paging: PagingPayload
+
+
+class SubBoardPayload(TypedDict):
+    id: int
+    title: str
+
+
+class BoardPayload(TypedDict):
+    id: int
+    title: str
+    description: str
+    subboards: Sequence[SubBoardPayload]
+
+
+class BoardCategoryPayload(TypedDict):
+    title: str
+    boards: Sequence[BoardPayload]
