@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Iterator
+from typing import List, Iterator, Optional
 
 from .typed import (
     SubBoardPayload,
@@ -171,7 +171,7 @@ class PollOption:
         self.votes: int = data['votes']
 
     def __str__(self) -> str:
-        return f'{self.text}, {self.votes} votes'
+        return f'{self.text} - {self.votes} votes'
 
 
 class Poll:
@@ -180,14 +180,14 @@ class Poll:
     Attributes:
         id: id of the poll
         question: the question of the poll
-        close: whether the poll is closed or not
+        closed: whether the poll is closed or not
         options: list of options
     """
 
     def __init__(self, data: PollPayload) -> None:
         self.id: int = data['id']
         self.question: str = data['question']
-        self.close: bool = data['close']
+        self.closed: bool = data['closed']
         self.options: List[PollOption] = []
         for option in data['options']:
             self.options.append(PollOption(option))
@@ -249,7 +249,7 @@ class Discussion:
     Attributes:
         title: the title of the discussion
         posts: list of all posts under this discussion
-        polls: list of all polls under this discussion
+        poll: optional, poll in this discussion
     """
 
     def __init__(self, data: DiscussionPayload) -> None:
@@ -260,16 +260,15 @@ class Discussion:
         # sort by number so that the discussion is printed in order
         # it should not be necessary in theory
         self.posts.sort(key=lambda item: item.number)
-        self.polls: List[Poll] = []
+        self.poll: Optional[Poll] = None
         if 'poll' in data:
-            for poll in data['poll']:
-                self.polls.append(Poll(poll))
+            self.poll = Poll(data['poll'])
 
     def __str__(self) -> str:
         s = f'Discussion: "{self.title}":\n'
         s += '\n'.join([str(post) for post in self.posts])
         s += '\nAttached polls:\n'
-        s += '\n'.join([str(poll) for poll in self.polls])
+        s += str(self.poll)
         return s
 
 

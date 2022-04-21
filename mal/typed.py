@@ -317,7 +317,7 @@ class PollOptionPayload(TypedDict):
 class PollPayload(TypedDict):
     id: int
     question: str
-    close: bool
+    closed: bool
     options: Sequence[PollOptionPayload]
 
 
@@ -337,7 +337,9 @@ class _PartDiscussionPayload(TypedDict):
 
 class DiscussionPayload(_PartDiscussionPayload, total=False):
     # it is singular but the doc says it's an array
-    poll: Sequence[PollPayload]
+    # EDIT: apparently it can only be one poll so i am correcting this
+    # poll: Sequence[PollPayload]
+    poll: PollPayload
 
 
 class TopicDetailPayload(TypedDict):
