@@ -15,6 +15,7 @@ Welcome to mal.py's documentation!
 - accessing public lists of users
 - retrieving seasonal anime
 - retrieve rankings for anime and manga
+- retrieve forum boards and discussions
 
 Introduction
 ------------

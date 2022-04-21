@@ -11,6 +11,7 @@ The objective for now is to cover queries for the publicly available information
 - accessing public lists of users
 - retrieving seasonal anime
 - retrieve rankings for anime and manga
+- retrieve forum boards and discussions
 
 The next features that are planned to be implemented are:
 

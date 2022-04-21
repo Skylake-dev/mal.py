@@ -82,7 +82,6 @@ class Topic:
     Attributes:
         id: the id of the topic
         title: description for this topic
-        created_at:
         created_by: name of the user who created the topic
         number_of_posts: the number of posts under this topic
         last_post_created_by: name of the user who created the last post

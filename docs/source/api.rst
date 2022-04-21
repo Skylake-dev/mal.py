@@ -44,6 +44,14 @@ mal.enums module
    :undoc-members:
    :show-inheritance:
 
+mal.forum module
+----------------
+
+.. automodule:: mal.forum
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 mal.genre module
 ----------------
 
