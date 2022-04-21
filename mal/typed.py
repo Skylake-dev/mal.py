@@ -284,3 +284,59 @@ class BoardPayload(TypedDict):
 class BoardCategoryPayload(TypedDict):
     title: str
     boards: Sequence[BoardPayload]
+
+
+class TopicPayload(TypedDict):
+    id: int
+    title: str
+    created_at: str
+    created_by: GenericPayload
+    number_of_posts: int
+    last_post_created_at: str
+    last_post_created_by: GenericPayload
+    is_locked: bool
+
+
+class ForumTopicsPayload(TypedDict):
+    data: Sequence[TopicPayload]
+    paging: PagingPayload
+
+
+class ForumUserPayload(TypedDict):
+    id: int
+    name: str
+    forum_avator: str   # yes, it is avator in the API
+
+
+class PollOptionPayload(TypedDict):
+    id: int
+    text: str
+    votes: int
+
+
+class PollPayload(TypedDict):
+    id: int
+    question: str
+    close: bool
+    options: Sequence[PollOptionPayload]
+
+
+class ForumPostPayload(TypedDict):
+    id: int
+    number: int
+    created_at: str
+    created_by: ForumUserPayload
+    body: str
+    signature: str
+
+
+class DiscussionPayload(TypedDict):
+    title: str
+    posts: Sequence[ForumPostPayload]
+    # it is singular but the doc says it's an array
+    poll: Sequence[PollPayload]
+
+
+class TopicDetailPayload(TypedDict):
+    data: Sequence[DiscussionPayload]
+    paging: PagingPayload
