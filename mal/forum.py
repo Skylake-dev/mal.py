@@ -28,6 +28,9 @@ class SubBoard:
         self.id: int = data['id']
         self.title: str = data['title']
 
+    def __str__(self) -> str:
+        return f'Subboard {self.id}: {self.title}'
+
 
 class Board:
     """Represents a forum board.
@@ -47,6 +50,11 @@ class Board:
         for subboard in data['subboards']:
             self.subboards.append(SubBoard(subboard))
 
+    def __str__(self) -> str:
+        s = f'Board {self.id}: {self.title}\n{self.description}\n'
+        s += '\n'.join([str(sub) for sub in self.subboards])
+        return s
+
 
 class BoardCategory:
     """Boards grouped by category.
@@ -61,6 +69,11 @@ class BoardCategory:
         self.boards: List[Board] = []
         for board in data['boards']:
             self.boards.append(Board(board))
+
+    def __str__(self) -> str:
+        s = f'Category: {self.title}'
+        s += '\n'.join([str(board) for board in self.boards])
+        return s
 
 
 class Topic:
