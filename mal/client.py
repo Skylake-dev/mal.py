@@ -5,6 +5,7 @@ from typing import List, Dict, Sequence, Union
 from .endpoints import Endpoint
 from .anime import Anime, AnimeSearchResults, AnimeList, AnimeRanking, Seasonal
 from .manga import Manga, MangaSearchResults, MangaList, MangaRanking
+from .forum import BoardCategory, ForumTopics, Discussion
 from .enums import Field, AnimeListStatus, MangaListStatus, Season, AnimeRankingType, MangaRankingType
 from .utils import MISSING
 
@@ -330,6 +331,73 @@ class Client:
         data = response.json()
         return MangaRanking(data, ranking_type)
 
+    def get_boards(self) -> Sequence[BoardCategory]:
+        """Returns a list of the forum boards divided by category."""
+        url: str = Endpoint.FORUM_BOARDS.url
+        response = self._request(url)
+        data = response.json()
+        categories: List[BoardCategory] = []
+        for category in data['categories']:
+            categories.append(BoardCategory(category))
+        return categories
+
+    def get_topics(
+        self,
+        *,
+        query: str = MISSING,
+        board_id: int = MISSING,
+        subboard_id: int = MISSING,
+        limit: int = MISSING,
+        topic_user_name: str = MISSING,
+        user_name: str = MISSING
+    ) -> ForumTopics:
+        """Returns all the topics matching the given parameters. At least one of the arguments
+        must be specified.
+
+        Keyword Args:
+            query: query used to search topics, minimum length 3 characters
+            board_id: limit the search to a specific board
+            subboard_id: limit the search to a specific subboard
+            limit: maximum number of results, between 1 and 100
+            topic_user_name: return only topics started by a specific user
+            user_name: return topics where the user has partecipated
+                NOTE: the difference between topic_user_name and user_name is not clear
+                to get all posts by a user use only topic_user_name
+
+        Raises:
+            ValueError: no argument was specified
+        """
+        parameters = self._build_topic_parameters(Endpoint.FORUM_TOPICS, query=query, board_id=board_id,
+                                                  subboard_id=subboard_id, limit=limit,
+                                                  topic_user_name=topic_user_name, user_name=user_name)
+        url: str = Endpoint.FORUM_TOPICS.url
+        response = self._request(url, params=parameters)
+        data = response.json()
+        return ForumTopics(data, query)
+
+    def get_topic_details(
+        self,
+        topic_id: int,
+        *,
+        limit: int = MISSING
+    ) -> Discussion:
+        """Returns all the details on a given topic.
+
+        Args:
+            topic_id: required, the id of the topic to request
+
+        Keyword Args:
+            limit: the number of posts to retrieve, defaults to 100
+        """
+        parameters = {}
+        if limit is not MISSING:
+            parameters['limit'] = str(self._get_limit(
+                Endpoint.FORUM_TOPIC_DETAIL, limit))
+        url: str = f'{Endpoint.FORUM_TOPIC_DETAIL}/{topic_id}'
+        response = self._request(url, params=parameters)
+        data = response.json()
+        return Discussion(data['data'])
+
     def _request(self, url: str, params: Dict[str, str] = MISSING) -> requests.Response:
         """Handles all the requests that are made and checks the status code of the response.
         If a requests raises an exception it is propagated.
@@ -412,6 +480,35 @@ class Client:
                 parameters['nsfw'] = 'true'
         elif nsfw:
             parameters['nsfw'] = 'true'
+        return parameters
+
+    def _build_topic_parameters(
+        self,
+        endpoint: Endpoint,
+        *,
+        query: str = MISSING,
+        board_id: int = MISSING,
+        subboard_id: int = MISSING,
+        limit: int = MISSING,
+        topic_user_name: str = MISSING,
+        user_name: str = MISSING
+    ) -> Dict[str, str]:
+        parameters: Dict[str, str] = {}
+        if query is not MISSING:
+            parameters['q'] = query
+        if board_id is not MISSING:
+            parameters['board_id'] = str(board_id)
+        if subboard_id is not MISSING:
+            parameters['subboard_id'] = str(subboard_id)
+        if limit is not MISSING:
+            parameters['limit'] = str(self._get_limit(endpoint, limit))
+        if topic_user_name is not MISSING:
+            parameters['topic_user_name'] = topic_user_name
+        if user_name is not MISSING:
+            parameters['user_name'] = user_name
+        if not parameters:
+            raise ValueError(
+                'At least one parameter must be specified to search topics.')
         return parameters
 
     def _get_limit(self, endpoint: Endpoint, value: int) -> int:

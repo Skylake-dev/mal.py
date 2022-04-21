@@ -115,7 +115,10 @@ class ForumTopics:
             self._topics.append(Topic(topic))
 
     def __str__(self) -> str:
-        s = f'Topics for the query "{self.query}:"\n'
+        if self.query:
+            s = f'Topics for the query "{self.query}:"\n'
+        else:
+            s = f'Topics:\n'
         s += '\n'.join([str(topic) for topic in self._topics])
         return s
 
@@ -246,8 +249,9 @@ class Discussion:
         # it should not be necessary in theory
         self.posts.sort(key=lambda item: item.number)
         self.polls: List[Poll] = []
-        for poll in data['poll']:
-            self.polls.append(Poll(poll))
+        if 'poll' in data:
+            for poll in data['poll']:
+                self.polls.append(Poll(poll))
 
     def __str__(self) -> str:
         s = f'Discussion: "{self.title}":\n'

@@ -330,9 +330,12 @@ class ForumPostPayload(TypedDict):
     signature: str
 
 
-class DiscussionPayload(TypedDict):
+class _PartDiscussionPayload(TypedDict):
     title: str
     posts: Sequence[ForumPostPayload]
+
+
+class DiscussionPayload(_PartDiscussionPayload, total=False):
     # it is singular but the doc says it's an array
     poll: Sequence[PollPayload]
 
