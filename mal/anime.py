@@ -173,6 +173,9 @@ class AnimeSearchResults:
     def __iter__(self) -> Iterator[Anime]:
         return iter(self._results)
 
+    def __len__(self) -> int:
+        return len(self._results)
+
     def __str__(self) -> str:
         return '\n'.join([str(result) for result in self._results])
 
@@ -198,10 +201,21 @@ class AnimeListEntryStatus(ListStatus):
         self.num_times_rewatched: int = data.get('num_times_rewatched', 0)
         self.rewatch_value: int = data.get('rewatch_value', 0)
 
+    def __str__(self) -> str:
+        if self.is_rewatching:
+            s = f'Status: {self.status} (rewatching)\n'
+        else:
+            s = f'Status: {self.status}\n'
+        if self.score != 0:
+            s += f' - scored: {self.score}\n'
+        if self.num_episodes_watched != 0:
+            s += f' - episodes watched: {self.num_episodes_watched}\n'
+        return s
+
     @property
     def completed(self) -> bool:
         """True if the user has marked this series as completed."""
-        return self.status is AnimeListStatus('completed')
+        return self.status is AnimeListStatus.completed
 
 
 class AnimeListEntry(UserListEntry):
@@ -217,6 +231,9 @@ class AnimeListEntry(UserListEntry):
         self.list_status: AnimeListEntryStatus = AnimeListEntryStatus(
             data['list_status'])
 
+    def __str__(self) -> str:
+        return f'{self.entry.title} - {str(self.list_status)}'
+
 
 class AnimeList(UserList):
     """Iterable object containing the anime list of a user."""
@@ -228,6 +245,12 @@ class AnimeList(UserList):
 
     def __iter__(self) -> Iterator[AnimeListEntry]:
         return iter(self._list)
+
+    def __len__(self) -> int:
+        return super().__len__()
+
+    def __str__(self) -> str:
+        return super().__str__()
 
 
 class AnimeRanking(Ranking):
@@ -244,6 +267,15 @@ class AnimeRanking(Ranking):
         if isinstance(type, str):
             type = AnimeRankingType(type)
         self.type: AnimeRankingType = type
+
+    def __iter__(self) -> Iterator[int]:
+        return super().__iter__()
+
+    def __len__(self) -> int:
+        return super().__len__()
+
+    def __str__(self) -> str:
+        return super().__str__()
 
     def get(self, rank: int) -> Anime:
         """Returns the entry corresponding to the given rank.

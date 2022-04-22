@@ -70,6 +70,12 @@ class BoardCategory:
         for board in data['boards']:
             self.boards.append(Board(board))
 
+    def __iter__(self) -> Iterator[Board]:
+        return iter(self.boards)
+
+    def __len__(self) -> int:
+        return len(self.boards)
+
     def __str__(self) -> str:
         s = f'Category: {self.title}'
         s += '\n'.join([str(board) for board in self.boards])
@@ -126,6 +132,12 @@ class ForumTopics:
         for topic in data['data']:
             self._topics.append(Topic(topic))
 
+    def __iter__(self) -> Iterator[Topic]:
+        return iter(self._topics)
+
+    def __len__(self) -> int:
+        return len(self._topics)
+
     def __str__(self) -> str:
         if self.query:
             s = f'Topics for the query "{self.query}:"\n'
@@ -133,12 +145,6 @@ class ForumTopics:
             s = f'Topics:\n'
         s += '\n'.join([str(topic) for topic in self._topics])
         return s
-
-    def __len__(self) -> int:
-        return len(self._topics)
-
-    def __iter__(self) -> Iterator[Topic]:
-        return iter(self._topics)
 
 
 class ForumUser:
@@ -154,6 +160,9 @@ class ForumUser:
         self.id: int = data['id']
         self.name: str = data['name']
         self.avatar: str = data['forum_avator']
+
+    def __str__(self) -> str:
+        return self.name
 
 
 class PollOption:
@@ -191,6 +200,12 @@ class Poll:
         self.options: List[PollOption] = []
         for option in data['options']:
             self.options.append(PollOption(option))
+
+    def __iter__(self) -> Iterator[PollOption]:
+        return iter(self.options)
+
+    def __len__(self) -> int:
+        return self.num_options
 
     def __str__(self) -> str:
         s = f'Poll: {self.question}:\n'
@@ -264,12 +279,23 @@ class Discussion:
         if 'poll' in data:
             self.poll = Poll(data['poll'])
 
+    def __iter__(self) -> Iterator[ForumPost]:
+        return iter(self.posts)
+
+    def __len__(self) -> int:
+        return self.num_posts
+
     def __str__(self) -> str:
         s = f'Discussion: "{self.title}":\n'
         s += '\n'.join([str(post) for post in self.posts])
         s += '\nAttached polls:\n'
         s += str(self.poll)
         return s
+
+    @property
+    def num_posts(self) -> int:
+        """Shorthand for len(discussion.posts)."""
+        return len(self.posts)
 
 
 class TopicDetail:
@@ -280,11 +306,11 @@ class TopicDetail:
         for discussion in data['data']:
             self._discussions.append(Discussion(discussion))
 
-    def __str__(self) -> str:
-        return '\n'.join([str(disc) for disc in self._discussions])
-
     def __len__(self) -> int:
         return len(self._discussions)
 
     def __iter__(self) -> Iterator[Discussion]:
         return iter(self._discussions)
+
+    def __str__(self) -> str:
+        return '\n'.join([str(disc) for disc in self._discussions])

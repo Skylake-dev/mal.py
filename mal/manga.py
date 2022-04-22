@@ -95,6 +95,9 @@ class MangaSearchResults:
     def __iter__(self) -> Iterator[Manga]:
         return iter(self._results)
 
+    def __len__(self) -> int:
+        return len(self._results)
+
     def __str__(self) -> str:
         return '\n'.join([str(result) for result in self._results])
 
@@ -122,6 +125,17 @@ class MangaListEntryStatus(ListStatus):
         self.num_times_reread: int = data.get('num_times_reread', 0)
         self.rewatch_value: int = data.get('rewatch_value', 0)
 
+    def __str__(self) -> str:
+        if self.is_rereading:
+            s = f'Status: {self.status} (rereading)\n'
+        else:
+            s = f'Status: {self.status}\n'
+        if self.score != 0:
+            s += f' - scored: {self.score}\n'
+        if self.num_chapters_read != 0:
+            s += f' - chapters read: {self.num_chapters_read}\n'
+        return s
+
     @property
     def completed(self) -> bool:
         """True if the user has marked this series as completed."""
@@ -141,6 +155,9 @@ class MangaListEntry(UserListEntry):
         self.list_status: MangaListEntryStatus = MangaListEntryStatus(
             data['list_status'])
 
+    def __str__(self) -> str:
+        return f'{self.entry.title} - {str(self.list_status)}'
+
 
 class MangaList(UserList):
     """Iterable object containing the manga list of a user."""
@@ -152,6 +169,12 @@ class MangaList(UserList):
 
     def __iter__(self) -> Iterator[MangaListEntry]:
         return iter(self._list)
+
+    def __len__(self) -> int:
+        return super().__len__()
+
+    def __str__(self) -> str:
+        return super().__str__()
 
 
 class MangaRanking(Ranking):
@@ -168,6 +191,15 @@ class MangaRanking(Ranking):
         if isinstance(type, str):
             type = MangaRankingType(type)
         self.type: MangaRankingType = type
+
+    def __iter__(self) -> Iterator[int]:
+        return super().__iter__()
+
+    def __len__(self) -> int:
+        return super().__len__()
+
+    def __str__(self) -> str:
+        return super().__str__()
 
     def get(self, rank: int) -> Manga:
         """Returns the entry corresponding to the given rank.

@@ -1,6 +1,6 @@
 """Contains the definitions for the base classes used in other modules."""
 from datetime import datetime, date
-from typing import Any, Dict, List, Mapping, Optional, Sequence, Union
+from typing import Any, Dict, Iterator, List, Mapping, Optional, Sequence, Union
 
 from .utils import MISSING
 from .titles import Titles
@@ -70,6 +70,11 @@ class Related:
             else:
                 self._related[key].append(BaseResult(entry['node']))
 
+    # __iter__ is not present because the results are divided in different categories
+
+    def __len__(self) -> int:
+        return sum([len(self._related[key]) for key in self._related])
+
     def __str__(self) -> str:
         s = f''
         for entry in self._related:
@@ -111,6 +116,9 @@ class Recommendation:
                 (entry['num_recommendations'], BaseResult(entry['node'])))
         # sort by the number of people who recommended a specific title
         self._recommendations.sort(key=lambda x: x[0], reverse=True)
+
+    def __iter__(self) -> Iterator[tuple[int, BaseResult]]:
+        return iter(self._recommendations)
 
     def __len__(self) -> int:
         return len(self._recommendations)
@@ -181,6 +189,9 @@ class Result(BaseResult):
         self._end: str = payload.get('end_date', MISSING)
         self._created_at: str = payload.get('created_at', MISSING)
         self._updated_at: str = payload.get('updated_at', MISSING)
+
+    def __str__(self) -> str:
+        return super().__str__()
 
     @property
     def start_date(self) -> Optional[Union[date, int]]:
@@ -257,6 +268,8 @@ class ListStatus:
             self.tags = [tag for tag in _tags]
         self._updated_at: str = data.get('updated_at', MISSING)
 
+    # __str__ implemented in subclasses
+
     @property
     def start_date(self) -> Optional[date]:
         """The ending date as a datetime.date."""
@@ -288,7 +301,7 @@ class UserListEntry:
         self.list_status: ListStatus
 
     def __str__(self) -> str:
-        return f'{self.entry.title} - scored: {self.score}'
+        return f'{self.entry.title}'
 
     @property
     def score(self) -> int:
@@ -302,6 +315,8 @@ class UserList:
     def __init__(self, data: Union[AnimeListPayload, MangaListPayload]) -> None:
         # initialized in subclass to avoid doing it twice
         self._list: Sequence[UserListEntry]
+
+    # __iter__ implemented in subclasses
 
     def __len__(self) -> int:
         return len(self._list)
@@ -317,6 +332,9 @@ class Ranking:
         # initialized in subclasses
         self._ranking: Mapping[int, Result]
         self.type = type
+
+    def __iter__(self) -> Iterator[int]:
+        return iter(self._ranking)
 
     def __len__(self) -> int:
         return len(self._ranking)

@@ -28,3 +28,17 @@ class Titles:
             self.synonyms = None
             self.en_title = None
             self.ja_title = None
+
+    def __str__(self) -> str:
+        synonyms = ' - '.join([syn for syn in self.synonyms]
+                              ) if self.synonyms else ''
+        # if i do it with a multi line string it will print also the leading whitespace
+        s = ''
+        s += f'main title: {self.title}\n'
+        if synonyms is not '':
+            s += f'synonyms: {synonyms}\n'
+        if self.en_title:
+            s += f'english: {self.en_title}\n'
+        if self.ja_title:
+            s += f'japanese: {self.ja_title}\n'
+        return s
