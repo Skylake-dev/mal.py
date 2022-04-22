@@ -178,7 +178,7 @@ class Result(BaseResult):
         for genre in _genres:
             self.genres.append(Genre(genre))
         self.related_anime: Related = Related(payload.get('related_anime', []))
-        self.related_manga: Related = Related(payload.get('related_anime', []))
+        self.related_manga: Related = Related(payload.get('related_manga', []))
         self.recommendations: Recommendation = Recommendation(
             payload.get('recommendations', []))
         self._pictures: List[PicturePayload] = []
