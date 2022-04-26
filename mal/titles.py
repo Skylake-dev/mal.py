@@ -35,7 +35,7 @@ class Titles:
         # if i do it with a multi line string it will print also the leading whitespace
         s = ''
         s += f'main title: {self.title}\n'
-        if synonyms is not '':
+        if synonyms != '':
             s += f'synonyms: {synonyms}\n'
         if self.en_title:
             s += f'english: {self.en_title}\n'
