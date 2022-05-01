@@ -148,19 +148,20 @@ class MangaNodePayload(TypedDict):
 
 
 class PagingPayload(TypedDict, total=False):
-    # for now this is not used
     previous: str
     next: str
 
 
-class AnimeSearchPayload(TypedDict):
+class PaginatedPayload(TypedDict):
+    paging: PagingPayload
+
+
+class AnimeSearchPayload(PaginatedPayload):
     data: Sequence[AnimeNodePayload]
-    paging: PagingPayload
 
 
-class MangaSearchPayload(TypedDict):
+class MangaSearchPayload(PaginatedPayload):
     data: Sequence[MangaNodePayload]
-    paging: PagingPayload
 
 
 # Related to user list
@@ -209,24 +210,20 @@ class MangaListEntryPayload(TypedDict):
     list_status: MangaListEntryStatusPayload
 
 
-class ListPayload(TypedDict):
+class ListPayload(PaginatedPayload):
     data: Sequence[ListEntryPayload]
-    paging: PagingPayload
 
 
-class AnimeListPayload(TypedDict):
+class AnimeListPayload(PaginatedPayload):
     data: Sequence[AnimeListEntryPayload]
-    paging: PagingPayload
 
 
-class MangaListPayload(TypedDict):
+class MangaListPayload(PaginatedPayload):
     data: Sequence[MangaListEntryPayload]
-    paging: PagingPayload
 
 
-class SeasonalAnimePayload(TypedDict):
+class SeasonalAnimePayload(PaginatedPayload):
     data: Sequence[AnimeNodePayload]
-    paging: PagingPayload
     season: SeasonPayload
 
 
@@ -254,19 +251,16 @@ class MangaRankingNodePayload(TypedDict):
     ranking: RankPayload
 
 
-class RankingPayload(TypedDict):
+class RankingPayload(PaginatedPayload):
     data: Sequence[RankingNodePayload]
-    paging: PagingPayload
 
 
-class AnimeRankingPayload(TypedDict):
+class AnimeRankingPayload(PaginatedPayload):
     data: Sequence[AnimeRankingNodePayload]
-    paging: PagingPayload
 
 
-class MangaRankingPayload(TypedDict):
+class MangaRankingPayload(PaginatedPayload):
     data: Sequence[MangaRankingNodePayload]
-    paging: PagingPayload
 
 
 class SubBoardPayload(TypedDict):
@@ -297,9 +291,8 @@ class TopicPayload(TypedDict):
     is_locked: bool
 
 
-class ForumTopicsPayload(TypedDict):
+class ForumTopicsPayload(PaginatedPayload):
     data: Sequence[TopicPayload]
-    paging: PagingPayload
 
 
 class ForumUserPayload(TypedDict):
@@ -342,6 +335,5 @@ class DiscussionPayload(_PartDiscussionPayload, total=False):
     poll: PollPayload
 
 
-class TopicDetailPayload(TypedDict):
+class TopicDetailPayload(PaginatedPayload):
     data: Sequence[DiscussionPayload]
-    paging: PagingPayload

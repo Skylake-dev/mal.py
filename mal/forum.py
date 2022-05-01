@@ -1,6 +1,8 @@
 from datetime import datetime
 from typing import List, Iterator, Optional
 
+from .base import PaginatedObject
+
 from .typed import (
     SubBoardPayload,
     BoardPayload,
@@ -119,7 +121,7 @@ class Topic:
         return datetime.fromisoformat(self._last_post_created_at)
 
 
-class ForumTopics:
+class ForumTopics(PaginatedObject):
     """Results of a topic query. Contains the resulting topics.
 
     Attributes:
@@ -127,6 +129,7 @@ class ForumTopics:
     """
 
     def __init__(self, data: ForumTopicsPayload, query: str) -> None:
+        super().__init__(data)
         self.query: str = query
         self._topics: List[Topic] = []
         for topic in data['data']:
@@ -298,10 +301,11 @@ class Discussion:
         return len(self.posts)
 
 
-class TopicDetail:
+class TopicDetail(PaginatedObject):
     """Results for a topic detail query. Contains the discussions under this topic."""
 
     def __init__(self, data: TopicDetailPayload) -> None:
+        super().__init__(data)
         self._discussions: List[Discussion] = []
         for discussion in data['data']:
             self._discussions.append(Discussion(discussion))

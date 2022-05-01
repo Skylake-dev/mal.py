@@ -3,7 +3,7 @@ from typing import Dict, List, Iterator, Optional, Sequence, Union
 
 from .utils import MISSING
 from .enums import AdaptationFrom, AnimeStatus, AnimeMediaType, AnimeListStatus, AnimeRankingType
-from .base import Result, UserListEntry, UserList, ListStatus, Ranking
+from .base import Result, UserListEntry, UserList, ListStatus, Ranking, PaginatedObject
 from .typed import (
     AnimePayload,
     AnimeSearchPayload,
@@ -162,10 +162,11 @@ class Anime(Result):
         return f'https://myanimelist.net/anime/{self.id}'
 
 
-class AnimeSearchResults:
+class AnimeSearchResults(PaginatedObject):
     """Container for anime search results. Iterable and printable."""
 
     def __init__(self, data: AnimeSearchPayload) -> None:
+        super().__init__(data)
         self._results: List[Anime] = []
         for el in data['data']:
             self._results.append(Anime(el['node']))
@@ -239,6 +240,7 @@ class AnimeList(UserList):
     """Iterable object containing the anime list of a user."""
 
     def __init__(self, data: AnimeListPayload) -> None:
+        super().__init__(data)
         self._list: List[AnimeListEntry] = []
         for item in data['data']:
             self._list.append(AnimeListEntry(item))
@@ -261,6 +263,7 @@ class AnimeRanking(Ranking):
     """
 
     def __init__(self, data: AnimeRankingPayload, type: Union[str, AnimeRankingType]) -> None:
+        super().__init__(data, type)
         self._ranking: Dict[int, Anime] = {}
         for node in data['data']:
             self._ranking[node['ranking']['rank']] = Anime(node['node'])
@@ -289,10 +292,11 @@ class AnimeRanking(Ranking):
         return self._ranking[rank]
 
 
-class Seasonal:
+class Seasonal(PaginatedObject):
     """Container for seasonal anime searches."""
 
     def __init__(self, data: SeasonalAnimePayload) -> None:
+        super().__init__(data)
         self._list: List[Anime] = []
         for item in data['data']:
             self._list.append(Anime(item['node']))

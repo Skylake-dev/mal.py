@@ -1,6 +1,6 @@
 """Module in charge of making requests to the API and managing possible errors."""
 import requests
-from typing import List, Dict, Sequence, Union
+from typing import Any, List, Dict, Optional, Sequence, Union
 
 from .endpoints import Endpoint
 from .anime import Anime, AnimeSearchResults, AnimeList, AnimeRanking, Seasonal
@@ -397,6 +397,14 @@ class Client:
         response = self._request(url, params=parameters)
         data = response.json()
         return Discussion(data['data'])
+
+    def get_url(self, url: Optional[str]) -> Any:
+        """Get the raw json data from the given url. Mostly for internal use."""
+        if url is None:
+            return None
+        response = self._session.get(url)
+        response.raise_for_status()
+        return response.json()
 
     def _request(self, url: str, params: Dict[str, str] = MISSING) -> requests.Response:
         """Handles all the requests that are made and checks the status code of the response.

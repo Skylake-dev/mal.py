@@ -1,6 +1,7 @@
 """Contains the definitions for the base classes used in other modules."""
+from __future__ import annotations
 from datetime import datetime, date
-from typing import Any, Dict, Iterator, List, Mapping, Optional, Sequence, Union
+from typing import Any, Dict, Iterator, List, Mapping, Optional, Sequence, TYPE_CHECKING, Union
 
 from .utils import MISSING
 from .titles import Titles
@@ -16,8 +17,70 @@ from .typed import (
     ListEntryPayload,
     AnimeListPayload,
     MangaListPayload,
-    RankingPayload
+    RankingPayload,
+    PaginatedPayload
 )
+
+if TYPE_CHECKING:
+    from typing_extensions import Self
+    # the next line causes an error in vscode + pylance because it is marked as
+    # an import cycle, but it is there only for type hinting purposes
+    # you can disable this by adding the following lines to your settings.json
+    #     "python.analysis.diagnosticSeverityOverrides": {
+    #         "reportImportCycles": "none"
+    #     },
+    from .client import Client
+
+
+class PaginatedObject:
+    """Base class for results that can consist of multiple pages. Implements the method
+    to request the next page.
+    """
+
+    def __init__(self, data: PaginatedPayload) -> None:
+        paging = data['paging']
+        self._prev: Optional[str] = paging['previous'] if 'previous' in paging else None
+        self._next: Optional[str] = paging['next'] if 'next' in paging else None
+
+    def previous_page(self, client: Client) -> Optional[Self]:
+        """Returns a new object with the previous page of results.
+        If not present returns None.
+
+        .. note::
+
+            If you don't want to deal with paginated results consider
+            increasing the 'limit' parameter in your queries
+
+        Parameters:
+            client: the client used to make requests
+        """
+        if self._prev is None:
+            return None
+        data: PaginatedPayload = client.get_url(self._prev)
+        if data:
+            return self.__class__(data)
+        else:
+            return None
+
+    def next_page(self, client: Client) -> Optional[Self]:
+        """Returns a new object with the next page of results.
+        If not present returns None.
+
+        .. note::
+
+            If you don't want to deal with paginated results consider
+            increasing the 'limit' parameter in your queries
+
+        Parameters:
+            client: the client used to make requests
+        """
+        if self._next is None:
+            return None
+        data: PaginatedPayload = client.get_url(self._next)
+        if data:
+            return self.__class__(data)
+        else:
+            return None
 
 
 class BaseResult:
@@ -309,10 +372,11 @@ class UserListEntry:
         return self.list_status.score
 
 
-class UserList:
+class UserList(PaginatedObject):
     """Base for representing a user list."""
 
     def __init__(self, data: Union[AnimeListPayload, MangaListPayload]) -> None:
+        super().__init__(data)
         # initialized in subclass to avoid doing it twice
         self._list: Sequence[UserListEntry]
 
@@ -325,10 +389,11 @@ class UserList:
         return '\n'.join([str(item) for item in self._list])
 
 
-class Ranking:
+class Ranking(PaginatedObject):
     """Base for representing ranking results."""
 
     def __init__(self, data: RankingPayload, type: Any) -> None:
+        super().__init__(data)
         # initialized in subclasses
         self._ranking: Mapping[int, Result]
         self.type = type

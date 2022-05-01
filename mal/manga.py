@@ -1,7 +1,7 @@
 from typing import Dict, List, Iterator, Optional, Union
 
 from .enums import MangaStatus, MangaMediaType, MangaListStatus, MangaRankingType
-from .base import Result, ListStatus, UserListEntry, UserList, Ranking
+from .base import Result, ListStatus, UserListEntry, UserList, Ranking, PaginatedObject
 from .typed import (
     AuthorPayload,
     GenericPayload,
@@ -84,10 +84,11 @@ class Manga(Result):
         return f'https://myanimelist.net/manga/{self.id}'
 
 
-class MangaSearchResults:
+class MangaSearchResults(PaginatedObject):
     """Container for manga search results. Iterable and printable."""
 
     def __init__(self, data: MangaSearchPayload) -> None:
+        super().__init__(data)
         self._results: List[Manga] = []
         for el in data['data']:
             self._results.append(Manga(el['node']))
@@ -185,6 +186,7 @@ class MangaRanking(Ranking):
     """
 
     def __init__(self, data: MangaRankingPayload, type: Union[str, MangaRankingType]) -> None:
+        super().__init__(data, type)
         self._ranking: Dict[int, Manga] = {}
         for node in data['data']:
             self._ranking[node['ranking']['rank']] = Manga(node['node'])
