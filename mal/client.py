@@ -75,6 +75,7 @@ class Client:
         query: str,
         *,
         limit: int = MISSING,
+        offset: int = MISSING,
         fields: Sequence[Union[Field, str]] = MISSING,
         include_nsfw: bool = MISSING
     ) -> AnimeSearchResults:
@@ -87,6 +88,7 @@ class Client:
 
         Keyword args:
             limit: maximum number of results, needs to be between 1 and 100
+            offset: get results at a certain offset from the start, defaults to 0
             fields: the fields that are going to be requested, for a complete list see Field enum
             include_nsfw: include results marked as nsfw
 
@@ -94,7 +96,7 @@ class Client:
             AnimeSearchResults: iterable object containing the results
         """
         parameters = self._build_search_parameters(
-            Endpoint.ANIME, limit=limit, fields=fields, nsfw=include_nsfw)
+            Endpoint.ANIME, limit=limit, offset=offset, fields=fields, nsfw=include_nsfw)
         parameters['q'] = query
         url: str = Endpoint.ANIME.url
         response = self._request(url, params=parameters)
@@ -107,6 +109,7 @@ class Client:
         query: str,
         *,
         limit: int = MISSING,
+        offset: int = MISSING,
         fields: Sequence[Union[Field, str]] = MISSING,
         include_nsfw: bool = MISSING
     ) -> MangaSearchResults:
@@ -119,6 +122,7 @@ class Client:
 
         Keyword args:
             limit: maximum number of results, needs to be between 1 and 100
+            offset: get results at a certain offset from the start, defaults to 0
             fields: the fields that are going to be requested, for a complete list see Field enum
             include_nsfw: include results marked as nsfw
 
@@ -126,7 +130,7 @@ class Client:
             MangaSearchResults: iterable object containing the results
         """
         parameters = self._build_search_parameters(
-            Endpoint.MANGA, limit=limit, fields=fields, nsfw=include_nsfw)
+            Endpoint.MANGA, limit=limit, offset=offset, fields=fields, nsfw=include_nsfw)
         parameters['q'] = query
         url: str = Endpoint.MANGA.url
         response = self._request(url, params=parameters)
@@ -177,6 +181,7 @@ class Client:
         username: str,
         *,
         limit: int = MISSING,
+        offset: int = MISSING,
         fields: Sequence[Union[Field, str]] = MISSING,
         status: Union[AnimeListStatus, str] = MISSING,
         include_nsfw: bool = MISSING
@@ -188,6 +193,7 @@ class Client:
 
         Keyword args:
             limit: set the number of entries to retrieve, defaults to 10
+            offset: get results at a certain offset from the start, defaults to 0
             fields: set which fields to get for each entry
             status: return only a specific category. will return all if omitted
             include_nsfw: include results marked as nsfw
@@ -196,7 +202,7 @@ class Client:
             AnimeList: iterable with all the entries of the list
         """
         parameters = self._build_list_paramenters(
-            Endpoint.USER_ANIMELIST, limit=limit, fields=fields, status=status, nsfw=include_nsfw)
+            Endpoint.USER_ANIMELIST, limit=limit, offset=offset, fields=fields, status=status, nsfw=include_nsfw)
         url = Endpoint.USER_ANIMELIST.url.replace('{username}', username)
         response = self._request(url, params=parameters)
         data = response.json()
@@ -207,6 +213,7 @@ class Client:
         username: str,
         *,
         limit: int = MISSING,
+        offset: int = MISSING,
         fields: Sequence[Union[Field, str]] = MISSING,
         status: Union[MangaListStatus, str] = MISSING,
         include_nsfw: bool = MISSING
@@ -218,6 +225,7 @@ class Client:
 
         Keyword args:
             limit: set the number of entries to retrieve, defaults to 10
+            offset: get results at a certain offset from the start, defaults to 0
             fields: set which fields to get for each entry
             status: return only a specific category. will return all if omitted
             include_nsfw: include results marked as nsfw
@@ -226,7 +234,7 @@ class Client:
             MangaList: iterable with all the entries of the list
         """
         parameters = self._build_list_paramenters(
-            Endpoint.USER_MANGALIST, limit=limit, fields=fields, status=status, nsfw=include_nsfw)
+            Endpoint.USER_MANGALIST, limit=limit, offset=offset, fields=fields, status=status, nsfw=include_nsfw)
         url = Endpoint.USER_MANGALIST.url.replace('{username}', username)
         response = self._request(url, params=parameters)
         data = response.json()
@@ -238,6 +246,7 @@ class Client:
         season: Union[str, Season],
         *,
         limit: int = MISSING,
+        offset: int = MISSING,
         fields: Sequence[Union[Field, str]] = MISSING,
         include_nsfw: bool = MISSING
     ) -> Seasonal:
@@ -254,6 +263,7 @@ class Client:
 
         Keyword args:
             limit: set the number of entries to retrieve, defaults to 10
+            offset: get results at a certain offset from the start, defaults to 0
             fields: set which fields to get for each entry
             include_nsfw: include results marked as nsfw
 
@@ -261,7 +271,7 @@ class Client:
             Seasonal: container for the results, sorted by score
         """
         parameters = self._build_search_parameters(
-            Endpoint.ANIME_SEASONAL, limit=limit, fields=fields, nsfw=include_nsfw)
+            Endpoint.ANIME_SEASONAL, limit=limit, offset=offset, fields=fields, nsfw=include_nsfw)
         parameters['sort'] = 'anime_score'  # TODO: make it customizable
         url = f'{Endpoint.ANIME_SEASONAL}/{year}/{season}'
         response = self._request(url, params=parameters)
@@ -274,6 +284,7 @@ class Client:
         *,
         ranking_type: Union[str, AnimeRankingType] = AnimeRankingType.all,
         limit: int = MISSING,
+        offset: int = MISSING,
         fields: Sequence[Union[Field, str]] = MISSING
     ) -> AnimeRanking:
         """Returns the top anime in the rankings.
@@ -282,6 +293,7 @@ class Client:
             ranking_type: the type of ranking to request, defaults to all.
                 For all possible values see enums.AnimeRanking
             limit: numbers of entries to request
+            offset: get results at a certain offset from the start, defaults to 0
             fields: set which fields to get for each entry
 
         Returns:
@@ -291,7 +303,7 @@ class Client:
             ValueError: ranking_type is invalid, check AnimeRankingType for all options
         """
         parameters = self._build_search_parameters(
-            Endpoint.ANIME_RANKING, limit=limit, fields=fields)
+            Endpoint.ANIME_RANKING, limit=limit, offset=offset, fields=fields)
         if isinstance(ranking_type, str):
             ranking_type = AnimeRankingType(ranking_type)
         parameters['ranking_type'] = f'{ranking_type}'
@@ -305,6 +317,7 @@ class Client:
         *,
         ranking_type: Union[str, MangaRankingType] = MangaRankingType.all,
         limit: int = MISSING,
+        offset: int = MISSING,
         fields: Sequence[Union[Field, str]] = MISSING
     ) -> MangaRanking:
         """Returns the top manga in the rankings.
@@ -313,6 +326,7 @@ class Client:
             ranking_type: the type of ranking to request, defaults to all.
                 For all possible values see enums.MangaRanking
             limit: numbers of entries to request
+            offset: get results at a certain offset from the start, defaults to 0
             fields: set which fields to get for each entry
 
         Returns:
@@ -322,7 +336,7 @@ class Client:
             ValueError: ranking_type is invalid, check MangaRankingType for all options
         """
         parameters = self._build_search_parameters(
-            Endpoint.MANGA_RANKING, limit=limit, fields=fields)
+            Endpoint.MANGA_RANKING, limit=limit, offset=offset, fields=fields)
         if isinstance(ranking_type, str):
             ranking_type = MangaRankingType(ranking_type)
         parameters['ranking_type'] = f'{ranking_type}'
@@ -348,6 +362,7 @@ class Client:
         board_id: int = MISSING,
         subboard_id: int = MISSING,
         limit: int = MISSING,
+        offset: int = MISSING,
         topic_user_name: str = MISSING,
         user_name: str = MISSING
     ) -> ForumTopics:
@@ -359,6 +374,7 @@ class Client:
             board_id: limit the search to a specific board
             subboard_id: limit the search to a specific subboard
             limit: maximum number of results, between 1 and 100
+            offset: get results at a certain offset from the start, defaults to 0
             topic_user_name: return only topics started by a specific user
             user_name: return topics where the user has partecipated
                 NOTE: the difference between topic_user_name and user_name is not clear
@@ -368,7 +384,7 @@ class Client:
             ValueError: no argument was specified
         """
         parameters = self._build_topic_parameters(Endpoint.FORUM_TOPICS, query=query, board_id=board_id,
-                                                  subboard_id=subboard_id, limit=limit,
+                                                  subboard_id=subboard_id, limit=limit, offset=offset,
                                                   topic_user_name=topic_user_name, user_name=user_name)
         url: str = Endpoint.FORUM_TOPICS.url
         response = self._request(url, params=parameters)
@@ -379,7 +395,8 @@ class Client:
         self,
         topic_id: int,
         *,
-        limit: int = MISSING
+        limit: int = MISSING,
+        offset: int = MISSING
     ) -> Discussion:
         """Returns all the details on a given topic.
 
@@ -388,11 +405,14 @@ class Client:
 
         Keyword Args:
             limit: the number of posts to retrieve, defaults to 100
+            offset: get results at a certain offset from the start, defaults to 0
         """
-        parameters = {}
+        parameters: Dict[str, str] = {}
         if limit is not MISSING:
             parameters['limit'] = str(self._get_limit(
                 Endpoint.FORUM_TOPIC_DETAIL, limit))
+        if offset is not MISSING:
+            parameters['offset'] = str(offset)
         url: str = f'{Endpoint.FORUM_TOPIC_DETAIL}/{topic_id}'
         response = self._request(url, params=parameters)
         data = response.json()
@@ -422,6 +442,7 @@ class Client:
         endpoint: Endpoint,
         *,
         limit: int = MISSING,
+        offset: int = MISSING,
         fields: Sequence[Union[Field, str]] = MISSING,
         nsfw: bool = MISSING
     ) -> Dict[str, str]:
@@ -430,6 +451,8 @@ class Client:
             parameters['limit'] = str(self._get_limit(endpoint, limit))
         else:
             parameters['limit'] = str(self._search_limit)
+        if offset is not MISSING:
+            parameters['offset'] = str(offset)
         if fields is not MISSING:
             parsed_fields = Field.from_list(fields)
             if endpoint.is_anime:
@@ -458,6 +481,7 @@ class Client:
         endpoint: Endpoint,
         *,
         limit: int = MISSING,
+        offset: int = MISSING,
         fields: Sequence[Union[Field, str]] = MISSING,
         status: Union[AnimeListStatus, MangaListStatus, str] = MISSING,
         nsfw: bool = MISSING
@@ -465,6 +489,8 @@ class Client:
         parameters: Dict[str, str] = {}
         if limit is not MISSING:
             parameters['limit'] = str(self._get_limit(endpoint, limit))
+        if offset is not MISSING:
+            parameters['offset'] = str(offset)
         if fields is not MISSING:
             parsed_fields = Field.from_list(fields)
             if endpoint.is_anime:
@@ -498,6 +524,7 @@ class Client:
         board_id: int = MISSING,
         subboard_id: int = MISSING,
         limit: int = MISSING,
+        offset: int = MISSING,
         topic_user_name: str = MISSING,
         user_name: str = MISSING
     ) -> Dict[str, str]:
@@ -510,6 +537,8 @@ class Client:
             parameters['subboard_id'] = str(subboard_id)
         if limit is not MISSING:
             parameters['limit'] = str(self._get_limit(endpoint, limit))
+        if offset is not MISSING:
+            parameters['offset'] = str(offset)
         if topic_user_name is not MISSING:
             parameters['topic_user_name'] = topic_user_name
         if user_name is not MISSING:
