@@ -53,6 +53,7 @@ class MangaStatus(BaseEnum):
 
 class MangaMediaType(BaseEnum):
     doujinshi = 'doujinshi'
+    light_novel = 'light_novel'
     manga = 'manga'
     manhua = 'manhua'
     manhwa = 'manhwa'
