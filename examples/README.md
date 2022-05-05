@@ -8,4 +8,12 @@ For a full reference on the functionality of the library see the [documentation]
 ## Content
 
 - basic.ipynb -- shows how to initialize client and request data on a specific serie
-- search.ipynb -- shows how to perform searches of anime or manga that match a specific keyword
+- search.ipynb -- shows how to perform searches of anime or manga that match a specific keyword and deal with pagination
+
+NOTE: this examples assume that the library is installed in the system, if not you will need
+add the path of the `mal` folder to your path. For example in this case you can add as first cell
+
+```python
+import sys
+sys.path.append('..')
+```
