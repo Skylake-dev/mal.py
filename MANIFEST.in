@@ -1,2 +1,2 @@
 include requirements.txt
-include discord/py.typed
+include mal/py.typed
