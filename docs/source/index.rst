@@ -23,17 +23,11 @@ Introduction
 Start by installing the library on your system, the use of a
 virtual environment is recommended (see `Virtual Environments and Packages <https://docs.python.org/3/tutorial/venv.html>`_):
 
-- clone the repository
-
-   .. code-block:: shell
-
-      $ git clone https://github.com/Skylake-dev/mal.py
-
 - install the library
 
    .. code-block:: shell
 
-      $ pip install /path/to/cloned/repository
+      $ pip install mal-api.py
 
 - obtain a token for the mal API
 

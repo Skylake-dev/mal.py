@@ -23,7 +23,7 @@ extras_require = {
 }
 
 setup(
-    name='mal.py',
+    name='mal-api.py',
     author='Skylake-dev',
     url='https://github.com/Skylake-dev/mal.py',
     version=version,

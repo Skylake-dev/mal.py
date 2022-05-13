@@ -23,10 +23,8 @@ Python 3.8+ is needed.
 
 To use this library:
 
-- clone the repo
 - (optional) create a virtual environment `python -m venv .venv` and activate it
-- install with `pip install full/path/to/cloned/repo`
-  installation from pypi will be available once [this](https://github.com/pypa/pypi-support/issues/1800) is solved
+- install with `pip install mal-api.py`
 - to perform requests you need an API token
   log in on MAL -> account settings -> API -> create ID
 
