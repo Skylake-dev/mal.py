@@ -79,6 +79,31 @@ class Manga(Result):
         return ', '.join(mag['name'] for mag in self._serialization)
 
     @property
+    def is_publishing(self) -> bool:
+        """Returns True if the manga is currently publishing, False otherwise."""
+        return self.status == MangaStatus.publishing
+
+    @property
+    def is_finished(self) -> bool:
+        """Returns True if the manga is finished, False otherwise."""
+        return self.status == MangaStatus.finished
+
+    @property
+    def not_published(self) -> bool:
+        """Returns True if the manga has not yet published, False otherwise."""
+        return self.status == MangaStatus.not_published
+
+    @property
+    def is_discontinued(self) -> bool:
+        """Returns True if the manga is discontinued, False otherwise."""
+        return self.status == MangaStatus.discontinued
+
+    @property
+    def on_hiatus(self) -> bool:
+        """Returns True if the manga is on hiatus, False otherwise."""
+        return self.status == MangaStatus.on_hiatus
+
+    @property
     def url(self) -> str:
         """URL to the MAL page for this manga."""
         return f'https://myanimelist.net/manga/{self.id}'

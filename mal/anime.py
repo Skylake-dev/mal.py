@@ -157,6 +157,21 @@ class Anime(Result):
         return ', '.join(studio['name'] for studio in self._studios)
 
     @property
+    def is_airing(self) -> bool:
+        """Returns True if the anime is currently airing, False otherwise."""
+        return self.status == AnimeStatus.airing
+
+    @property
+    def is_finished(self) -> bool:
+        """Returns True if the anime is finished, False otherwise."""
+        return self.status == AnimeStatus.finished
+
+    @property
+    def not_aired(self) -> bool:
+        """Returns True if the anime has not yet aired, False otherwise."""
+        return self.status == AnimeStatus.not_aired
+
+    @property
     def url(self) -> str:
         """URL to the MAL page for this anime."""
         return f'https://myanimelist.net/anime/{self.id}'
