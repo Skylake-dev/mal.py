@@ -1,10 +1,20 @@
 from __future__ import annotations
 
-from enum import Enum
-from typing import List, Sequence, Union
+from enum import Enum, EnumMeta
+from typing import Any, List, Sequence, Union
 
 
-class BaseEnum(Enum):
+class BaseEnumMeta(EnumMeta):
+    def __contains__(cls: type[Any], obj: object) -> bool:
+        try:
+            cls(obj)
+        except ValueError:
+            return False
+        else:
+            return True
+
+
+class BaseEnum(Enum, metaclass=BaseEnumMeta):
     """Base class for all the constants used to represent the possible different
     values some fields. Can be printed directly and can be compared with a string if needed.
 
