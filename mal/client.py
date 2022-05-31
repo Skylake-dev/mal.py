@@ -6,7 +6,8 @@ from .endpoints import Endpoint
 from .anime import Anime, AnimeSearchResults, AnimeList, AnimeRanking, Seasonal
 from .manga import Manga, MangaSearchResults, MangaList, MangaRanking
 from .forum import BoardCategory, ForumTopics, Discussion
-from .enums import Field, AnimeListStatus, MangaListStatus, Season, AnimeRankingType, MangaRankingType
+from .enums import (Field, AnimeListStatus, MangaListStatus, Season,
+                    AnimeRankingType, MangaRankingType, AnimeListSort, MangaListSort)
 from .utils import MISSING
 
 
@@ -184,6 +185,7 @@ class Client:
         offset: int = MISSING,
         fields: Sequence[Union[Field, str]] = MISSING,
         status: Union[AnimeListStatus, str] = MISSING,
+        sort: Union[AnimeListSort, str] = MISSING,
         include_nsfw: bool = MISSING
     ) -> AnimeList:
         """Returns the anime list of a specific user, if public.
@@ -196,13 +198,14 @@ class Client:
             offset: get results at a certain offset from the start, defaults to 0
             fields: set which fields to get for each entry
             status: return only a specific category. will return all if omitted
+            sort: specify the sorting of the list
             include_nsfw: include results marked as nsfw
 
         Returns:
             AnimeList: iterable with all the entries of the list
         """
         parameters = self._build_list_paramenters(
-            Endpoint.USER_ANIMELIST, limit=limit, offset=offset, fields=fields, status=status, nsfw=include_nsfw)
+            Endpoint.USER_ANIMELIST, limit=limit, offset=offset, fields=fields, status=status, nsfw=include_nsfw, sort=sort)
         url = Endpoint.USER_ANIMELIST.url.replace('{username}', username)
         response = self._request(url, params=parameters)
         data = response.json()
@@ -216,6 +219,7 @@ class Client:
         offset: int = MISSING,
         fields: Sequence[Union[Field, str]] = MISSING,
         status: Union[MangaListStatus, str] = MISSING,
+        sort: Union[MangaListSort, str] = MISSING,
         include_nsfw: bool = MISSING
     ) -> MangaList:
         """Returns the manga list of a specific user, if public.
@@ -228,13 +232,14 @@ class Client:
             offset: get results at a certain offset from the start, defaults to 0
             fields: set which fields to get for each entry
             status: return only a specific category. will return all if omitted
+            sort: specify the sorting of the list
             include_nsfw: include results marked as nsfw
 
         Returns:
             MangaList: iterable with all the entries of the list
         """
         parameters = self._build_list_paramenters(
-            Endpoint.USER_MANGALIST, limit=limit, offset=offset, fields=fields, status=status, nsfw=include_nsfw)
+            Endpoint.USER_MANGALIST, limit=limit, offset=offset, fields=fields, status=status, nsfw=include_nsfw, sort=sort)
         url = Endpoint.USER_MANGALIST.url.replace('{username}', username)
         response = self._request(url, params=parameters)
         data = response.json()
@@ -484,6 +489,7 @@ class Client:
         offset: int = MISSING,
         fields: Sequence[Union[Field, str]] = MISSING,
         status: Union[AnimeListStatus, MangaListStatus, str] = MISSING,
+        sort: Union[AnimeListSort, MangaListSort, str] = MISSING,
         nsfw: bool = MISSING
     ) -> Dict[str, str]:
         parameters: Dict[str, str] = {}
@@ -508,6 +514,12 @@ class Client:
             else:
                 value = status.value
             parameters['status'] = value
+        if sort is not MISSING:
+            if isinstance(sort, str):
+                value = sort   # NOTE: default sort is by title
+            else:
+                value = sort.value
+            parameters['sort'] = value
         # nsfw overrides the value stored in self.include_nsfw
         if nsfw is MISSING:
             if self.include_nsfw:

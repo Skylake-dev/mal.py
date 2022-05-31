@@ -106,6 +106,22 @@ class MangaListStatus(BaseEnum):
     reading = 'reading'
 
 
+class AnimeListSort(BaseEnum):
+    score = 'list_score'
+    updated_at = 'list_updated_at'
+    title = 'anime_title'
+    start_date = 'anime_start_date'
+    id = 'anime_id'
+
+
+class MangaListSort(BaseEnum):
+    score = 'list_score'
+    updated_at = 'list_updated_at'
+    title = 'manga_title'
+    start_date = 'manga_start_date'
+    id = 'manga_id'
+
+
 class Season(BaseEnum):
     winter = 'winter'
     spring = 'spring'
