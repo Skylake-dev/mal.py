@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import logging
+
 from enum import Enum, EnumMeta
 from typing import Any, List, Sequence, Union
 
+logger = logging.getLogger(__name__)
 
 class BaseEnumMeta(EnumMeta):
     def __contains__(cls: type[Any], obj: object) -> bool:
@@ -260,6 +263,10 @@ class Field(BaseEnum):
         """
         result: List[Field] = []
         for field in fields:
+            # skip invalid fields
+            if field not in Field:
+                logger.warning(f'Invalid field: {field}')
+                continue
             if isinstance(field, str):
                 field = Field[field]
             result.append(field)
