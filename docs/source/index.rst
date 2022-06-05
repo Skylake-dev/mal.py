@@ -50,6 +50,23 @@ Now you can start using the library
 
 For more examples you can check the `examples on the repository <https://github.com/Skylake-dev/mal.py/tree/main/examples>`_
 
+Logging
+-------
+
+This library uses the logging module to keep track of configuration changes and possible
+network errors. If you want to see the logs you need to configure the logging module yourself, for example:
+
+   .. code-block:: python
+
+      import logging
+
+      logging.basicConfig(logging.level=INFO)
+
+For more information on how to use logging refer to the documentation of python:
+
+- `documentation of logging module <https://docs.python.org/3/library/logging.html>`_
+- `logging HOWTO guide <https://docs.python.org/3/howto/logging.html>`_
+
 Reporting issues
 ----------------
 

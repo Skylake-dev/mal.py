@@ -5,7 +5,7 @@ import logging
 from enum import Enum, EnumMeta
 from typing import Any, List, Sequence, Union
 
-logger = logging.getLogger(__name__)
+_log = logging.getLogger(__name__)
 
 class BaseEnumMeta(EnumMeta):
     def __contains__(cls: type[Any], obj: object) -> bool:
@@ -265,7 +265,7 @@ class Field(BaseEnum):
         for field in fields:
             # skip invalid fields
             if field not in Field:
-                logger.warning(f'Invalid field: {field}')
+                _log.warning(f'Invalid field "{field}", ignoring')
                 continue
             if isinstance(field, str):
                 field = Field[field]

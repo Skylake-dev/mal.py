@@ -1,5 +1,6 @@
 """Module in charge of making requests to the API and managing possible errors."""
 import requests
+import logging
 from typing import Any, List, Dict, Optional, Sequence, Union
 
 from .endpoints import Endpoint
@@ -10,6 +11,7 @@ from .enums import (Field, AnimeListStatus, MangaListStatus, Season,
                     AnimeRankingType, MangaRankingType, AnimeListSort, MangaListSort)
 from .utils import MISSING
 
+_log = logging.getLogger(__name__)
 
 class Client:
     """Offers the interface to make requests."""
@@ -34,6 +36,7 @@ class Client:
     @search_limit.setter
     def search_limit(self, value: int) -> None:
         self._search_limit = value if 0 < value < 100 else 100
+        _log.info(f'parameter "search_limit" default value set to {self._search_limit}')
 
     @property
     def anime_fields(self) -> List[Field]:
@@ -46,6 +49,7 @@ class Client:
     @anime_fields.setter
     def anime_fields(self, new_fields: Sequence[Union[Field, str]]) -> None:
         self._anime_fields = Field.from_list(new_fields)
+        _log.info(f'parameter "anime_fields" default value set to {self.anime_fields}')
 
     @property
     def manga_fields(self) -> List[Field]:
@@ -58,6 +62,7 @@ class Client:
     @manga_fields.setter
     def manga_fields(self, new_fields: Sequence[Union[Field, str]]) -> None:
         self._manga_fields = Field.from_list(new_fields)
+        _log.info(f'parameter "manga_fields" default value set to {self.manga_fields}')
 
     @property
     def include_nsfw(self) -> bool:
@@ -70,6 +75,7 @@ class Client:
     @include_nsfw.setter
     def include_nsfw(self, value: bool) -> None:
         self._include_nsfw = value
+        _log.info(f'parameter "nsfw" default value set to {value}')
 
     def anime_search(
         self,
@@ -428,7 +434,9 @@ class Client:
         if url is None:
             return None
         response = self._session.get(url)
-        response.raise_for_status()
+        if response.status_code != requests.codes.ok:
+            _log.error(f'Request to {url} errored with code {response.status_code}')
+            response.raise_for_status()
         return response.json()
 
     def _request(self, url: str, params: Dict[str, str] = MISSING) -> requests.Response:
@@ -439,7 +447,9 @@ class Client:
             response = self._session.get(url, params=params)
         else:
             response = self._session.get(url)
-        response.raise_for_status()  # TODO: handle error and possible retries
+        if response.status_code != requests.codes.ok:
+            _log.error(f'Request to {url} with parameters {params} errored with code {response.status_code}')
+            response.raise_for_status()  # TODO: handle error and possible retries
         return response
 
     def _build_search_parameters(

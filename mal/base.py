@@ -1,5 +1,7 @@
 """Contains the definitions for the base classes used in other modules."""
 from __future__ import annotations
+
+import logging
 from datetime import datetime, date
 from typing import Any, Dict, Iterator, List, Mapping, Optional, Sequence, TYPE_CHECKING, Union
 
@@ -20,6 +22,8 @@ from .typed import (
     RankingPayload,
     PaginatedPayload
 )
+
+_log = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -55,7 +59,9 @@ class PaginatedObject:
             client: the client used to make requests
         """
         if self._prev is None:
+            _log.info('No previous page available')
             return None
+        _log.info(f'Requesting previous page at {self._prev}')
         data: PaginatedPayload = client.get_url(self._prev)
         if data:
             return self.__class__(data)
@@ -75,7 +81,9 @@ class PaginatedObject:
             client: the client used to make requests
         """
         if self._next is None:
+            _log.info('No next page available')
             return None
+        _log.info(f'Requesting next page at {self._next}')
         data: PaginatedPayload = client.get_url(self._next)
         if data:
             return self.__class__(data)

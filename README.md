@@ -44,4 +44,20 @@ Full documentation available [here](https://malpy.readthedocs.io/en/latest/index
 
 Code samples can be found in the examples folder.
 
+## Logging
+
+This library uses the logging module to keep track of configuration changes and possible
+network errors. If you want to see the logs you need to configure the logging module yourself, for example:
+
+```python
+import logging
+
+logging.basicConfig(logging.level=INFO)
+```
+
+For more information on how to use logging refer to the documentation of python:
+
+- [documentation of logging module](https://docs.python.org/3/library/logging.html)
+- [logging HOWTO guide](https://docs.python.org/3/howto/logging.html)
+
 This project is still a work in progress, if you have problems or find bugs feel free to open an issue or start a discussion.
