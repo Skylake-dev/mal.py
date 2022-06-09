@@ -381,12 +381,17 @@ class UserListEntry:
 
 
 class UserList(PaginatedObject):
-    """Base for representing a user list."""
+    """Base for representing a user list.
+
+    Attributes:
+        average_score: The averege score of all rated titles. It's 0.0f if not computable.
+    """
 
     def __init__(self, data: Union[AnimeListPayload, MangaListPayload]) -> None:
         super().__init__(data)
         # initialized in subclass to avoid doing it twice
         self._list: Sequence[UserListEntry]
+        self.average_score: float  # computed in subclasses where i have data
 
     # __iter__ implemented in subclasses
 
@@ -395,6 +400,18 @@ class UserList(PaginatedObject):
 
     def __str__(self) -> str:
         return '\n'.join([str(item) for item in self._list])
+
+    def _compute_average_score(self) -> float:
+        total = 0
+        count = 0
+        for item in self._list:
+            if item.score:
+                total += item.score
+                count += 1
+        if count != 0:
+            return total / count
+        return 0.0
+
 
 
 class Ranking(PaginatedObject):

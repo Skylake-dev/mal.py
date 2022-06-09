@@ -192,6 +192,7 @@ class MangaList(UserList):
         self._list: List[MangaListEntry] = []
         for item in data['data']:
             self._list.append(MangaListEntry(item))
+        self.average_score: float = self._compute_average_score()
 
     def __iter__(self) -> Iterator[MangaListEntry]:
         return iter(self._list)

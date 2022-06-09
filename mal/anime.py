@@ -259,6 +259,7 @@ class AnimeList(UserList):
         self._list: List[AnimeListEntry] = []
         for item in data['data']:
             self._list.append(AnimeListEntry(item))
+        self.average_score: float = self._compute_average_score()
 
     def __iter__(self) -> Iterator[AnimeListEntry]:
         return iter(self._list)
