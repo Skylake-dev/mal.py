@@ -1,8 +1,10 @@
+from __future__ import annotations
 from datetime import datetime, time
-from typing import Dict, List, Iterator, Optional, Sequence, Union
+from typing import Dict, List, Iterator, Optional, Sequence, TYPE_CHECKING, Union
 
 from .utils import MISSING
-from .enums import AdaptationFrom, AnimeStatus, AnimeMediaType, AnimeListStatus, AnimeRankingType
+from .endpoints import Endpoint
+from .enums import AdaptationFrom, AnimeStatus, AnimeMediaType, AnimeListStatus, AnimeRankingType, Field
 from .base import Result, UserListEntry, UserList, ListStatus, Ranking, PaginatedObject
 from .typed import (
     AnimePayload,
@@ -17,6 +19,15 @@ from .typed import (
     MusicPayload,
     StatisticsPayload
 )
+
+if TYPE_CHECKING:
+    # the next line causes an error in vscode + pylance because it is marked as
+    # an import cycle, but it is there only for type hinting purposes
+    # you can disable this by adding the following lines to your settings.json
+    #     "python.analysis.diagnosticSeverityOverrides": {
+    #         "reportImportCycles": "none"
+    #     },
+    from .client import Client
 
 
 class Song:
@@ -105,41 +116,7 @@ class Anime(Result):
     def __init__(self, payload: AnimePayload):
         """Creates an Anime object from the received json data."""
         super().__init__(payload)
-        _status = payload.get('status')
-        self.status: Optional[AnimeStatus] = AnimeStatus(
-            _status) if _status else None
-        _media_type = payload.get('media_type')
-        self.media_type: Optional[AnimeMediaType] = AnimeMediaType(
-            _media_type) if _media_type else None
-        self.num_episodes: int = payload.get('num_episodes', 0)
-        _broadcast_info = payload.get('broadcast', MISSING)
-        if _broadcast_info is not MISSING:
-            self.broadcast_day: str = _broadcast_info['day_of_the_week']
-            # start_time can be missing
-            self.broadcast_time: time = datetime.strptime(
-                _broadcast_info.get('start_time', '00:00'), '%H:%M').time()
-        else:
-            self.broadcast_day: str = 'not requested'
-            self.broadcast_time: time = datetime.strptime(
-                '00:00', '%H:%M').time()
-        _source = payload.get('source')
-        self.source: Optional[AdaptationFrom] = AdaptationFrom(
-            _source) if _source else None
-        self.average_episode_duration: int = payload.get(
-            'average_episode_duration', 0)
-        self.rating: str = payload.get('rating', 'not requested')
-        self._studios: Sequence[GenericPayload] = payload.get('studios', [])
-        self._start_season: SeasonPayload = payload.get(
-            'start_season', MISSING)
-        _openings = payload.get('opening_themes')
-        self.openings: Optional[Music] = Music(
-            _openings) if _openings else None
-        _endings = payload.get('ending_themes')
-        self.endings: Optional[Music] = Music(
-            _endings) if _endings else None
-        _stats = payload.get('statistics')
-        self.statistics: Optional[Statistics] = Statistics(
-            _stats) if _stats else None
+        self._load_data(payload)
 
     @property
     def start_season(self) -> str:
@@ -175,6 +152,54 @@ class Anime(Result):
     def url(self) -> str:
         """URL to the MAL page for this anime."""
         return f'https://myanimelist.net/anime/{self.id}'
+
+    @property
+    def api_url(self) -> str:
+        """URL to request this title from the MAL API."""
+        return f'{Endpoint.ANIME}/{self.id}'
+
+    def load_fields(self, client: Client, *, fields: Sequence[Union[str, Field]] = MISSING) -> None:
+        # NOTE: maybe check if fields are for anime?
+        payload = super().load_fields(client, fields=fields)
+        self._load_data(payload)
+
+    def _load_data(self, payload: AnimePayload) -> None:
+        """Populate all attributes, for internal use."""
+        _status = payload.get('status')
+        self.status: Optional[AnimeStatus] = AnimeStatus(
+            _status) if _status else None
+        _media_type = payload.get('media_type')
+        self.media_type: Optional[AnimeMediaType] = AnimeMediaType(
+            _media_type) if _media_type else None
+        self.num_episodes: int = payload.get('num_episodes', 0)
+        _broadcast_info = payload.get('broadcast', MISSING)
+        if _broadcast_info is not MISSING:
+            self.broadcast_day: str = _broadcast_info['day_of_the_week']
+            # start_time can be missing
+            self.broadcast_time: time = datetime.strptime(
+                _broadcast_info.get('start_time', '00:00'), '%H:%M').time()
+        else:
+            self.broadcast_day: str = 'not requested'
+            self.broadcast_time: time = datetime.strptime(
+                '00:00', '%H:%M').time()
+        _source = payload.get('source')
+        self.source: Optional[AdaptationFrom] = AdaptationFrom(
+            _source) if _source else None
+        self.average_episode_duration: int = payload.get(
+            'average_episode_duration', 0)
+        self.rating: str = payload.get('rating', 'not requested')
+        self._studios: Sequence[GenericPayload] = payload.get('studios', [])
+        self._start_season: SeasonPayload = payload.get(
+            'start_season', MISSING)
+        _openings = payload.get('opening_themes')
+        self.openings: Optional[Music] = Music(
+            _openings) if _openings else None
+        _endings = payload.get('ending_themes')
+        self.endings: Optional[Music] = Music(
+            _endings) if _endings else None
+        _stats = payload.get('statistics')
+        self.statistics: Optional[Statistics] = Statistics(
+            _stats) if _stats else None
 
 
 class AnimeSearchResults(PaginatedObject):

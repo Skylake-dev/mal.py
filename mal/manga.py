@@ -1,6 +1,9 @@
-from typing import Dict, List, Iterator, Optional, Union
+from __future__ import annotations
+from typing import Dict, List, Iterator, Optional, Sequence, TYPE_CHECKING, Union
 
-from .enums import MangaStatus, MangaMediaType, MangaListStatus, MangaRankingType
+from .endpoints import Endpoint
+from .utils import MISSING
+from .enums import MangaStatus, MangaMediaType, MangaListStatus, MangaRankingType, Field
 from .base import Result, ListStatus, UserListEntry, UserList, Ranking, PaginatedObject
 from .typed import (
     AuthorPayload,
@@ -12,6 +15,15 @@ from .typed import (
     MangaListPayload,
     MangaRankingPayload
 )
+
+if TYPE_CHECKING:
+    # the next line causes an error in vscode + pylance because it is marked as
+    # an import cycle, but it is there only for type hinting purposes
+    # you can disable this by adding the following lines to your settings.json
+    #     "python.analysis.diagnosticSeverityOverrides": {
+    #         "reportImportCycles": "none"
+    #     },
+    from .client import Client
 
 
 class Author:
@@ -56,22 +68,7 @@ class Manga(Result):
     def __init__(self, payload: MangaPayload) -> None:
         """Creates an Manga object from the received json data."""
         super().__init__(payload)
-        _status = payload.get('status')
-        self.status: Optional[MangaStatus] = MangaStatus(
-            _status) if _status else None
-        _media_type = payload.get('media_type')
-        self.media_type: Optional[MangaMediaType] = MangaMediaType(
-            _media_type) if _media_type else None
-        self.authors: List[Author] = []
-        _authors = payload.get('authors', [])
-        for author in _authors:
-            self.authors.append(Author(author))
-        self.num_chapters: int = payload.get('num_chapters', 0)
-        self.num_volumes: int = payload.get('num_volumes', 0)
-        self._serialization: List[GenericPayload] = []
-        _magazines = payload.get('serialization', [])
-        for magazine in _magazines:
-            self._serialization.append(magazine['node'])
+        self._load_data(payload)
 
     @property
     def serialization(self):
@@ -107,6 +104,35 @@ class Manga(Result):
     def url(self) -> str:
         """URL to the MAL page for this manga."""
         return f'https://myanimelist.net/manga/{self.id}'
+
+    @property
+    def api_url(self) -> str:
+        """URL to request this title from the MAL API."""
+        return f'{Endpoint.MANGA}/{self.id}'
+
+    def load_fields(self, client: Client, *, fields: Sequence[Union[str, Field]] = MISSING) -> None:
+        # NOTE: maybe check if fields are for anime?
+        payload = super().load_fields(client, fields=fields)
+        self._load_data(payload)
+
+    def _load_data(self, payload: MangaPayload) -> None:
+        """Populate all attributes, for internal use."""
+        _status = payload.get('status')
+        self.status: Optional[MangaStatus] = MangaStatus(
+            _status) if _status else None
+        _media_type = payload.get('media_type')
+        self.media_type: Optional[MangaMediaType] = MangaMediaType(
+            _media_type) if _media_type else None
+        self.authors: List[Author] = []
+        _authors = payload.get('authors', [])
+        for author in _authors:
+            self.authors.append(Author(author))
+        self.num_chapters: int = payload.get('num_chapters', 0)
+        self.num_volumes: int = payload.get('num_volumes', 0)
+        self._serialization: List[GenericPayload] = []
+        _magazines = payload.get('serialization', [])
+        for magazine in _magazines:
+            self._serialization.append(magazine['node'])
 
 
 class MangaSearchResults(PaginatedObject):

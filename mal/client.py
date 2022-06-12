@@ -434,6 +434,7 @@ class Client:
         if url is None:
             return None
         response = self._session.get(url)
+        _log.info(f'Fetching url: {url}')
         if response.status_code != requests.codes.ok:
             _log.error(f'Request to {url} errored with code {response.status_code}')
             response.raise_for_status()

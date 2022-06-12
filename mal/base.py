@@ -7,7 +7,7 @@ from typing import Any, Dict, Iterator, List, Mapping, Optional, Sequence, TYPE_
 
 from .utils import MISSING
 from .titles import Titles
-from .enums import NSFWlevel
+from .enums import NSFWlevel, Field
 from .genre import Genre
 from .typed import (
     BaseResultPayload,
@@ -317,6 +317,47 @@ class Result(BaseResult):
                     pics.append(pic['medium'])
             return pics
         return None
+
+    @property
+    def url(self) -> str:
+        """Placeholder for the url of the entry."""
+        return 'URL placeholder'
+
+    @property
+    def api_url(self) -> str:
+        """Placeholder for the url to request this title from the API."""
+        return 'API URL placeholder'
+
+    def load_fields(
+        self,
+        client: Client,
+        *,
+        fields: Sequence[Union[str, Field]] = MISSING
+    ) -> Any:
+        """Load additional information for this title.
+
+        .. note::
+
+            This operation requires an extra call to the API. If you know from
+            the beginning the fields that you are going to need it's better to
+            request them all from the start.
+
+        Args:
+            client: The client used to make requests
+
+        Keyword args:
+            fields: The extra fields to request. If some fields are already present they
+                are refreshed. This argument is optional, if not passed it uses the default
+                fields that are set in the client.
+        """
+        parameters = ''
+        if fields is not MISSING:
+            # need to build parameters manually
+            parsed_fields = Field.from_list(fields)
+            # NOTE: i skip check on field validity
+            parameters = '?fields=' + ','.join(f.value for f in parsed_fields)
+        payload = client.get_url(f'{self.api_url}{parameters}')
+        return payload
 
 
 class ListStatus:
