@@ -200,6 +200,7 @@ class Anime(Result):
         _stats = payload.get('statistics')
         self.statistics: Optional[Statistics] = Statistics(
             _stats) if _stats else None
+        self.raw: AnimePayload = payload
 
 
 class AnimeSearchResults(PaginatedObject):
@@ -281,6 +282,7 @@ class AnimeList(UserList):
 
     def __init__(self, data: AnimeListPayload) -> None:
         super().__init__(data)
+        self.raw: AnimeListPayload = data
         self._list: List[AnimeListEntry] = []
         for item in data['data']:
             self._list.append(AnimeListEntry(item))

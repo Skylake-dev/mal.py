@@ -99,6 +99,8 @@ class BaseResult:
         id: the id of the result
             NOTE: this is not unique for each object only between objects of the same category
             for example, all anime have different id but an anime and a manga can have same id
+        titles: Titles object for title information.
+        raw: The raw json data for this object as returned by the API.
     """
 
     def __init__(self, payload: BaseResultPayload) -> None:
@@ -106,6 +108,7 @@ class BaseResult:
         self.id: int = payload['id']
         self.titles: Titles = Titles(payload['title'], MISSING)
         self._main_picture: PicturePayload = payload['main_picture']
+        self.raw: BaseResultPayload = payload
 
     def __int__(self) -> int:
         return self.id
@@ -228,6 +231,7 @@ class Result(BaseResult):
         related_anime: all the anime related to this title
         related_manga: all the manga related to this title
         recommendations: similar titles that users have recommended if you liked this one
+        raw: The raw json data for this object as returned by the API.
     """
 
     def __init__(self, payload: ResultPayload) -> None:
@@ -260,6 +264,7 @@ class Result(BaseResult):
         self._end: str = payload.get('end_date', MISSING)
         self._created_at: str = payload.get('created_at', MISSING)
         self._updated_at: str = payload.get('updated_at', MISSING)
+        self.raw: ResultPayload = payload
 
     def __str__(self) -> str:
         return super().__str__()
@@ -426,6 +431,7 @@ class UserList(PaginatedObject):
 
     Attributes:
         average_score: The averege score of all rated titles. It's 0.0f if not computable.
+        raw: The raw json data for this object as returned by the API.
     """
 
     def __init__(self, data: Union[AnimeListPayload, MangaListPayload]) -> None:
@@ -433,6 +439,7 @@ class UserList(PaginatedObject):
         # initialized in subclass to avoid doing it twice
         self._list: Sequence[UserListEntry]
         self.average_score: float  # computed in subclasses where i have data
+        self.raw: Union[AnimeListPayload, MangaListPayload]
 
     # __iter__ implemented in subclasses
 

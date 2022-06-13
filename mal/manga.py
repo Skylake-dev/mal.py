@@ -133,6 +133,7 @@ class Manga(Result):
         _magazines = payload.get('serialization', [])
         for magazine in _magazines:
             self._serialization.append(magazine['node'])
+        self.raw: MangaPayload = payload
 
 
 class MangaSearchResults(PaginatedObject):
@@ -215,6 +216,8 @@ class MangaList(UserList):
     """Iterable object containing the manga list of a user."""
 
     def __init__(self, data: MangaListPayload) -> None:
+        super().__init__(data)
+        self.raw: MangaListPayload = data
         self._list: List[MangaListEntry] = []
         for item in data['data']:
             self._list.append(MangaListEntry(item))
