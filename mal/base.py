@@ -470,6 +470,7 @@ class Ranking(PaginatedObject):
         # initialized in subclasses
         self._ranking: Mapping[int, Result]
         self.type = type
+        self.raw: RankingPayload
 
     def __iter__(self) -> Iterator[int]:
         return iter(self._ranking)

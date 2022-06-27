@@ -63,6 +63,7 @@ class Manga(Result):
         authors: list of authors that created the manga
         num_chapters: the number of chapters in total, 0 if not completed
         num_volumes: the number of volumes in total, 0 if not completed
+        raw: The raw json data for this object as returned by the API.
     """
 
     def __init__(self, payload: MangaPayload) -> None:
@@ -137,13 +138,18 @@ class Manga(Result):
 
 
 class MangaSearchResults(PaginatedObject):
-    """Container for manga search results. Iterable and printable."""
+    """Container for manga search results. Iterable and printable.
+
+    Attributes:
+        raw: The raw json data for this object as returned by the API.
+    """
 
     def __init__(self, data: MangaSearchPayload) -> None:
         super().__init__(data)
         self._results: List[Manga] = []
         for el in data['data']:
             self._results.append(Manga(el['node']))
+        self.raw: MangaSearchPayload = data
 
     def __iter__(self) -> Iterator[Manga]:
         return iter(self._results)
@@ -238,6 +244,7 @@ class MangaRanking(Ranking):
 
     Attributes:
         type: the criterion of this ranking
+        raw: The raw json data for this object as returned by the API.
     """
 
     def __init__(self, data: MangaRankingPayload, type: Union[str, MangaRankingType]) -> None:
@@ -248,6 +255,7 @@ class MangaRanking(Ranking):
         if isinstance(type, str):
             type = MangaRankingType(type)
         self.type: MangaRankingType = type
+        self.raw: MangaRankingPayload = data
 
     def __iter__(self) -> Iterator[int]:
         return super().__iter__()

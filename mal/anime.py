@@ -111,6 +111,7 @@ class Anime(Result):
         endings: ending themes used for this anime, None if not requested
         statistics: information about how many people have completed this, watching, etc, None
             if not requested
+        raw: The raw json data for this object as returned by the API.
     """
 
     def __init__(self, payload: AnimePayload):
@@ -204,13 +205,18 @@ class Anime(Result):
 
 
 class AnimeSearchResults(PaginatedObject):
-    """Container for anime search results. Iterable and printable."""
+    """Container for anime search results. Iterable and printable.
+
+    Attributes:
+        raw: The raw json data for this object as returned by the API.
+    """
 
     def __init__(self, data: AnimeSearchPayload) -> None:
         super().__init__(data)
         self._results: List[Anime] = []
         for el in data['data']:
             self._results.append(Anime(el['node']))
+        self.raw: AnimeSearchPayload = data
 
     def __iter__(self) -> Iterator[Anime]:
         return iter(self._results)
@@ -303,6 +309,7 @@ class AnimeRanking(Ranking):
 
     Attributes:
         type: the criterion of this ranking
+        raw: The raw json data for this object as returned by the API.
     """
 
     def __init__(self, data: AnimeRankingPayload, type: Union[str, AnimeRankingType]) -> None:
@@ -313,6 +320,7 @@ class AnimeRanking(Ranking):
         if isinstance(type, str):
             type = AnimeRankingType(type)
         self.type: AnimeRankingType = type
+        self.raw: AnimeRankingPayload = data
 
     def __iter__(self) -> Iterator[int]:
         return super().__iter__()
@@ -336,7 +344,13 @@ class AnimeRanking(Ranking):
 
 
 class Seasonal(PaginatedObject):
-    """Container for seasonal anime searches."""
+    """Container for seasonal anime searches.
+
+    Attributes:
+        year: the year of this season
+        season: which season was requested
+        raw: The raw json data for this object as returned by the API.
+    """
 
     def __init__(self, data: SeasonalAnimePayload) -> None:
         super().__init__(data)
@@ -345,6 +359,7 @@ class Seasonal(PaginatedObject):
             self._list.append(Anime(item['node']))
         self.year: int = data['season']['year']
         self.season: str = data['season']['season']
+        self.raw: SeasonalAnimePayload = data
 
     def __str__(self) -> str:
         s = f'{self.season} {self.year} anime:\n'
@@ -359,5 +374,5 @@ class Seasonal(PaginatedObject):
 
     @property
     def season_info(self) -> str:
-        """Information obout the season."""
+        """Information about the season."""
         return f'{self.season} {self.year}, {len(self._list)} anime'

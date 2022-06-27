@@ -126,6 +126,7 @@ class ForumTopics(PaginatedObject):
 
     Attributes:
         query: query that gave these results
+        raw: The raw json data for this object as returned by the API.
     """
 
     def __init__(self, data: ForumTopicsPayload, query: str) -> None:
@@ -134,6 +135,7 @@ class ForumTopics(PaginatedObject):
         self._topics: List[Topic] = []
         for topic in data['data']:
             self._topics.append(Topic(topic))
+        self.raw: ForumTopicsPayload = data
 
     def __iter__(self) -> Iterator[Topic]:
         return iter(self._topics)
@@ -267,7 +269,8 @@ class Discussion:
     Attributes:
         title: the title of the discussion
         posts: list of all posts under this discussion
-        poll: optional, poll in this discussion
+        poll: optional, poll in this discussio
+        raw: The raw json data for this object as returned by the API.
     """
 
     def __init__(self, data: DiscussionPayload) -> None:
@@ -281,6 +284,7 @@ class Discussion:
         self.poll: Optional[Poll] = None
         if 'poll' in data:
             self.poll = Poll(data['poll'])
+        self.raw: DiscussionPayload = data
 
     def __iter__(self) -> Iterator[ForumPost]:
         return iter(self.posts)
@@ -302,13 +306,18 @@ class Discussion:
 
 
 class TopicDetail(PaginatedObject):
-    """Results for a topic detail query. Contains the discussions under this topic."""
+    """Results for a topic detail query. Contains the discussions under this topic.
+
+    Attributes:
+        raw: The raw json data for this object as returned by the API.
+    """
 
     def __init__(self, data: TopicDetailPayload) -> None:
         super().__init__(data)
         self._discussions: List[Discussion] = []
         for discussion in data['data']:
             self._discussions.append(Discussion(discussion))
+        self.raw: TopicDetailPayload = data
 
     def __len__(self) -> int:
         return len(self._discussions)
