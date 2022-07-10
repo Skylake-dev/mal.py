@@ -91,7 +91,7 @@ class Client:
         method they are used for this query only.
 
         Args:
-            query: string used to search titles, minimum length 3 characters
+            query: string used to search titles, betwneen 3 and 64 characters
 
         Keyword args:
             limit: maximum number of results, needs to be between 1 and 100
@@ -101,7 +101,12 @@ class Client:
 
         Returns:
             AnimeSearchResults: iterable object containing the results
+
+        Raises:
+            ValueError: when the query is not between 3 and 64 characters
         """
+        if len(query) > 64 or len(query) < 3:
+            raise ValueError('query parameter needs to be between 3 and 64 characters long')
         parameters = self._build_search_parameters(
             Endpoint.ANIME, limit=limit, offset=offset, fields=fields, nsfw=include_nsfw)
         parameters['q'] = query
@@ -125,7 +130,7 @@ class Client:
         method they are used for this query only.
 
         Args:
-            query: string used to search titles, minimum length 3 characters
+            query: string used to search titles, betwneen 3 and 64 characters
 
         Keyword args:
             limit: maximum number of results, needs to be between 1 and 100
@@ -135,7 +140,12 @@ class Client:
 
         Returns:
             MangaSearchResults: iterable object containing the results
+
+        Raises:
+            ValueError: when the query is not between 3 and 64 characters
         """
+        if len(query) > 64 or len(query) < 3:
+            raise ValueError('query parameter needs to be between 3 and 64 characters long')
         parameters = self._build_search_parameters(
             Endpoint.MANGA, limit=limit, offset=offset, fields=fields, nsfw=include_nsfw)
         parameters['q'] = query
