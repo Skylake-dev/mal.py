@@ -180,6 +180,7 @@ class Field(BaseEnum):
     popularity = 'popularity'
     num_list_users = 'num_list_users'
     num_scoring_users = 'num_scoring_users'  # 0 if not aired/published
+    num_favorites = 'num_favorites'
     nsfw = 'nsfw'
     created_at = 'created_at'     # 01-01-1970 in some cases, probably a default value
     updated_at = 'updated_at'

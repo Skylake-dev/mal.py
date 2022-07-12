@@ -245,6 +245,7 @@ class Result(BaseResult):
         self.popularity: int = payload.get('popularity', 0)
         self.num_list_users: int = payload.get('num_list_users', 0)
         self.num_scoring_users: int = payload.get('num_scoring_users', 0)
+        self.num_favorites: int = payload.get('num_favorites', 0)
         self.background: str = payload.get(
             'background', 'background was not requested')
         self.nsfw: NSFWlevel = NSFWlevel(payload.get('nsfw', 'white'))

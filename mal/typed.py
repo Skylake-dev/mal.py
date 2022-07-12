@@ -101,6 +101,7 @@ class ResultPayload(BaseResultPayload, total=False):
     popularity: int
     num_list_users: int
     num_scoring_users: int
+    num_favorites: int
     nsfw: str
     created_at: str
     updated_at: str
