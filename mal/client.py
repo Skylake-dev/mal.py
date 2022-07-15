@@ -515,6 +515,12 @@ class Client:
                         [f.value for f in self._manga_fields])
                 if endpoint.is_list:
                     parameters['fields'] += ',list_status'
+            if status is not MISSING:
+                if isinstance(status, str):
+                    value = status
+                else:
+                    value = status.value
+                parameters['status'] = value
             if sort is not MISSING:
                 if isinstance(sort, str):
                     value = sort    # NOTE: how can i validate the string?
