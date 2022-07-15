@@ -134,6 +134,10 @@ class MangaListSort(BaseEnum):
     start_date = 'manga_start_date'
     id = 'manga_id'
 
+class SeasonalAnimeSort(BaseEnum):
+    score = 'anime_score'
+    num_list_users = 'anime_num_list_users'
+
 
 class Season(BaseEnum):
     winter = 'winter'

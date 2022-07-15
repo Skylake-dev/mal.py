@@ -8,7 +8,8 @@ from .anime import Anime, AnimeSearchResults, AnimeList, AnimeRanking, Seasonal
 from .manga import Manga, MangaSearchResults, MangaList, MangaRanking
 from .forum import BoardCategory, ForumTopics, Discussion
 from .enums import (Field, AnimeListStatus, MangaListStatus, Season,
-                    AnimeRankingType, MangaRankingType, AnimeListSort, MangaListSort)
+                    AnimeRankingType, MangaRankingType, AnimeListSort, MangaListSort,
+                    SeasonalAnimeSort)
 from .utils import MISSING
 
 _log = logging.getLogger(__name__)
@@ -269,6 +270,7 @@ class Client:
         limit: int = MISSING,
         offset: int = MISSING,
         fields: Sequence[Union[Field, str]] = MISSING,
+        sort: Union[SeasonalAnimeSort, str] = MISSING,
         include_nsfw: bool = MISSING
     ) -> Seasonal:
         """Returns the list of anime aired during a specific season.
@@ -286,6 +288,7 @@ class Client:
             limit: set the number of entries to retrieve, defaults to 10
             offset: get results at a certain offset from the start, defaults to 0
             fields: set which fields to get for each entry
+            sort: how to sort the results
             include_nsfw: include results marked as nsfw
 
         Returns:
@@ -293,7 +296,11 @@ class Client:
         """
         parameters = self._build_search_parameters(
             Endpoint.ANIME_SEASONAL, limit=limit, offset=offset, fields=fields, nsfw=include_nsfw)
-        parameters['sort'] = 'anime_score'  # TODO: make it customizable
+        if sort is not MISSING:
+            if isinstance(sort, str):
+                parameters['sort'] = sort
+            else:
+                parameters['sort'] = sort.value
         url = f'{Endpoint.ANIME_SEASONAL}/{year}/{season}'
         response = self._request(url, params=parameters)
         data = response.json()
