@@ -132,8 +132,7 @@ class Client:
         if len(query) > 64 or len(query) < 3:
             raise ValueError('query parameter needs to be between 3 and 64 characters long')
         parameters = self._build_parameters(
-            Endpoint.ANIME, limit=limit, offset=offset, fields=fields, nsfw=include_nsfw)
-        parameters['q'] = query
+            Endpoint.ANIME, query=query, limit=limit, offset=offset, fields=fields, nsfw=include_nsfw)
         url: str = Endpoint.ANIME.url
         response = self._request(url, params=parameters)
         data = response.json()
@@ -171,8 +170,7 @@ class Client:
         if len(query) > 64 or len(query) < 3:
             raise ValueError('query parameter needs to be between 3 and 64 characters long')
         parameters = self._build_parameters(
-            Endpoint.MANGA, limit=limit, offset=offset, fields=fields, nsfw=include_nsfw)
-        parameters['q'] = query
+            Endpoint.MANGA, query=query, limit=limit, offset=offset, fields=fields, nsfw=include_nsfw)
         url: str = Endpoint.MANGA.url
         response = self._request(url, params=parameters)
         data = response.json()
@@ -318,12 +316,7 @@ class Client:
             Seasonal: container for the results, sorted by score
         """
         parameters = self._build_parameters(
-            Endpoint.ANIME_SEASONAL, limit=limit, offset=offset, fields=fields, nsfw=include_nsfw)
-        if sort is not MISSING:
-            if isinstance(sort, str):
-                parameters['sort'] = sort
-            else:
-                parameters['sort'] = sort.value
+            Endpoint.ANIME_SEASONAL, limit=limit, offset=offset, fields=fields, sort=sort, nsfw=include_nsfw)
         url = f'{Endpoint.ANIME_SEASONAL}/{year}/{season}'
         response = self._request(url, params=parameters)
         data = response.json()
