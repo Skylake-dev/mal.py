@@ -1,5 +1,7 @@
 # mal.py
 
+[![Downloads](https://pepy.tech/badge/mal-api-py)](https://pepy.tech/project/mal-api-py)
+
 A [MyAnimeList](https://myanimelist.net) API wrapper written in Python.
 
 The objective for now is to cover queries for the publicly available information, support for taking actions on a user list is not planned.
