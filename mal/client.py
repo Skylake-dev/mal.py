@@ -21,55 +21,78 @@ class Client:
         self.__client_id: str = client_id
         self._session: requests.Session = requests.Session()
         self._session.headers.update({'X-MAL-CLIENT-ID': self.__client_id})
-        self._search_limit: int = 10  # between 1 and 100
+        self._limit: int = 10
         self._anime_fields: List[Field] = Field.default_anime()
         self._manga_fields: List[Field] = Field.default_manga()
         self._include_nsfw: bool = False
 
     @property
-    def search_limit(self) -> int:
+    def limit(self) -> int:
         """Maximum number of results per page. Defaults to 10. Can be changed
-        with any integer between 1 and 100. If a number outside of this range
-        is given then the value is set to the closest value inside the range.
-        """
-        return self._search_limit
+        to any positive integer, it will be automatically adjusted to fit within
+        the API limits.
 
-    @search_limit.setter
-    def search_limit(self, value: int) -> None:
-        self._search_limit = value if 0 < value < 100 else 100
-        _log.info(f'parameter "search_limit" default value set to {self._search_limit}')
+        Raises:
+            ValueError: if a negative value is passed
+        """
+        return self._limit
+
+    @limit.setter
+    def limit(self, value: int) -> None:
+        if value < 0:
+            raise ValueError('limit must be a positive integer')
+        self._limit = int(value)
+        _log.info(f'parameter "search_limit" default value set to {self._limit}')
 
     @property
     def anime_fields(self) -> List[Field]:
-        """Current fields that are requested in a anime query. Change this to change the
-        fields that are requested.
-        To change fields only for one request you should pass them to the search instead.
+        """Fields that are requested in a anime query. This value is used in the following
+        methods:
+         - anime_search
+         - get_anime
+         - get_anime_list
+         - get_seasonal_anime
+         - get_anime_ranking
+
+        Changes to this value are applied to all subsequent requests. Invalid fields
+        are automatically ignored.
+        It is possible to override this value per request by specifying the `fields` parameter.
         """
         return self._anime_fields
 
     @anime_fields.setter
     def anime_fields(self, new_fields: Sequence[Union[Field, str]]) -> None:
-        self._anime_fields = Field.from_list(new_fields)
-        _log.info(f'parameter "anime_fields" default value set to {self.anime_fields}')
+        fields = Field.from_list(new_fields)
+        self._anime_fields = [f for f in fields if f.is_anime]
+        _log.info(f'parameter "anime_fields" default value set to {self._anime_fields}')
 
     @property
     def manga_fields(self) -> List[Field]:
-        """Current fields that are requested in a manga query. Change this to change the
-        fields that are requested.
-        To change fields only for one request you should pass them to the search instead.
+        """Fields that are requested in a manga query. This value is used in the following
+        methods:
+         - manga_search
+         - get_manga
+         - get_manga_list
+         - get_manga_ranking
+
+        Changes to this value are applied to all subsequent requests. Invalid fields
+        are automatically ignored.
+        It is possible to override this value per request by specifying the `fields` parameter.
         """
         return self._manga_fields
 
     @manga_fields.setter
     def manga_fields(self, new_fields: Sequence[Union[Field, str]]) -> None:
-        self._manga_fields = Field.from_list(new_fields)
-        _log.info(f'parameter "manga_fields" default value set to {self.manga_fields}')
+        fields = Field.from_list(new_fields)
+        self._manga_fields = [f for f in fields if f.is_manga]
+        _log.info(f'parameter "manga_fields" default value set to {self._manga_fields}')
 
     @property
     def include_nsfw(self) -> bool:
-        """Whether searches and lists include titles marked as nsfw. Defaults to False.
-        Can be also specified for each query using the corresponding keyword, overriding
-        this setting.
+        """Specifies whether to include results marked as nsfw. Defaults to False.
+
+        Changes to this value are applied to all subsequent requests.
+        It is possible to override this value per request by specifying the `nsfw` parameter.
         """
         return self._include_nsfw
 
@@ -493,7 +516,7 @@ class Client:
             if limit is not MISSING:
                 parameters['limit'] = str(self._get_limit(endpoint, limit))
             else:
-                parameters['limit'] = str(self._search_limit)
+                parameters['limit'] = str(self._limit)
             if offset is not MISSING:
                 parameters['offset'] = str(offset)
             if fields is not MISSING:

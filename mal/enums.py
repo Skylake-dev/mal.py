@@ -256,15 +256,13 @@ class Field(BaseEnum):
     @classmethod
     def from_list(cls, fields: Sequence[Union[str, Field]]) -> List[Field]:
         """Returns the list of fields from the corresponding string representation.
+        Ignores invalid strings.
 
         Args:
             fields: list of fields
 
         Returns:
             List[Field]: converted fields
-
-        Raises:
-            ValueError: one or more strings are not a valid field
         """
         result: List[Field] = []
         for field in fields:
