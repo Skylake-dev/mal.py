@@ -108,7 +108,7 @@ class Client:
         """
         if len(query) > 64 or len(query) < 3:
             raise ValueError('query parameter needs to be between 3 and 64 characters long')
-        parameters = self._build_search_parameters(
+        parameters = self._build_parameters(
             Endpoint.ANIME, limit=limit, offset=offset, fields=fields, nsfw=include_nsfw)
         parameters['q'] = query
         url: str = Endpoint.ANIME.url
@@ -147,7 +147,7 @@ class Client:
         """
         if len(query) > 64 or len(query) < 3:
             raise ValueError('query parameter needs to be between 3 and 64 characters long')
-        parameters = self._build_search_parameters(
+        parameters = self._build_parameters(
             Endpoint.MANGA, limit=limit, offset=offset, fields=fields, nsfw=include_nsfw)
         parameters['q'] = query
         url: str = Endpoint.MANGA.url
@@ -168,7 +168,7 @@ class Client:
         Returns:
             Anime: the anime object with all the details
         """
-        parameters = self._build_search_parameters(
+        parameters = self._build_parameters(
             Endpoint.ANIME, fields=fields)
         url: str = Endpoint.ANIME.url + '/' + self._get_as_id(id)
         response = self._request(url, params=parameters)
@@ -187,7 +187,7 @@ class Client:
         Returns:
             Manga: the anime object with all the details
         """
-        parameters = self._build_search_parameters(
+        parameters = self._build_parameters(
             Endpoint.ANIME, fields=fields)
         url: str = Endpoint.MANGA.url + '/' + self._get_as_id(id)
         response = self._request(url, params=parameters)
@@ -221,7 +221,7 @@ class Client:
         Returns:
             AnimeList: iterable with all the entries of the list
         """
-        parameters = self._build_list_paramenters(
+        parameters = self._build_parameters(
             Endpoint.USER_ANIMELIST, limit=limit, offset=offset, fields=fields, status=status, nsfw=include_nsfw, sort=sort)
         url = Endpoint.USER_ANIMELIST.url.replace('{username}', username)
         response = self._request(url, params=parameters)
@@ -255,7 +255,7 @@ class Client:
         Returns:
             MangaList: iterable with all the entries of the list
         """
-        parameters = self._build_list_paramenters(
+        parameters = self._build_parameters(
             Endpoint.USER_MANGALIST, limit=limit, offset=offset, fields=fields, status=status, nsfw=include_nsfw, sort=sort)
         url = Endpoint.USER_MANGALIST.url.replace('{username}', username)
         response = self._request(url, params=parameters)
@@ -294,7 +294,7 @@ class Client:
         Returns:
             Seasonal: container for the results, sorted by score
         """
-        parameters = self._build_search_parameters(
+        parameters = self._build_parameters(
             Endpoint.ANIME_SEASONAL, limit=limit, offset=offset, fields=fields, nsfw=include_nsfw)
         if sort is not MISSING:
             if isinstance(sort, str):
@@ -330,7 +330,7 @@ class Client:
         Raises:
             ValueError: ranking_type is invalid, check AnimeRankingType for all options
         """
-        parameters = self._build_search_parameters(
+        parameters = self._build_parameters(
             Endpoint.ANIME_RANKING, limit=limit, offset=offset, fields=fields)
         if isinstance(ranking_type, str):
             ranking_type = AnimeRankingType(ranking_type)
@@ -363,7 +363,7 @@ class Client:
         Raises:
             ValueError: ranking_type is invalid, check MangaRankingType for all options
         """
-        parameters = self._build_search_parameters(
+        parameters = self._build_parameters(
             Endpoint.MANGA_RANKING, limit=limit, offset=offset, fields=fields)
         if isinstance(ranking_type, str):
             ranking_type = MangaRankingType(ranking_type)
@@ -411,7 +411,7 @@ class Client:
         Raises:
             ValueError: no argument was specified
         """
-        parameters = self._build_topic_parameters(Endpoint.FORUM_TOPICS, query=query, board_id=board_id,
+        parameters = self._build_parameters(Endpoint.FORUM_TOPICS, query=query, board_id=board_id,
                                                   subboard_id=subboard_id, limit=limit, offset=offset,
                                                   topic_user_name=topic_user_name, user_name=user_name)
         url: str = Endpoint.FORUM_TOPICS.url
@@ -470,122 +470,81 @@ class Client:
             response.raise_for_status()  # TODO: handle error and possible retries
         return response
 
-    def _build_search_parameters(
-        self,
-        endpoint: Endpoint,
-        *,
-        limit: int = MISSING,
-        offset: int = MISSING,
-        fields: Sequence[Union[Field, str]] = MISSING,
-        nsfw: bool = MISSING
-    ) -> Dict[str, str]:
-        parameters: Dict[str, str] = {}
-        if limit is not MISSING:
-            parameters['limit'] = str(self._get_limit(endpoint, limit))
-        else:
-            parameters['limit'] = str(self._search_limit)
-        if offset is not MISSING:
-            parameters['offset'] = str(offset)
-        if fields is not MISSING:
-            parsed_fields = Field.from_list(fields)
-            if endpoint.is_anime:
-                parameters['fields'] = ','.join(
-                    [f.value for f in parsed_fields if f.is_anime])
-            else:
-                parameters['fields'] = ','.join(
-                    [f.value for f in parsed_fields if f.is_manga])
-        else:
-            if endpoint.is_anime:
-                parameters['fields'] = ','.join(
-                    [f.value for f in self._anime_fields])
-            else:
-                parameters['fields'] = ','.join(
-                    [f.value for f in self._manga_fields])
-        # nsfw overrides the value stored in self.include_nsfw
-        if nsfw is MISSING:
-            if self.include_nsfw:
-                parameters['nsfw'] = 'true'
-        elif nsfw:
-            parameters['nsfw'] = 'true'
-        return parameters
-
-    def _build_list_paramenters(
-        self,
-        endpoint: Endpoint,
-        *,
-        limit: int = MISSING,
-        offset: int = MISSING,
-        fields: Sequence[Union[Field, str]] = MISSING,
-        status: Union[AnimeListStatus, MangaListStatus, str] = MISSING,
-        sort: Union[AnimeListSort, MangaListSort, str] = MISSING,
-        nsfw: bool = MISSING
-    ) -> Dict[str, str]:
-        parameters: Dict[str, str] = {}
-        if limit is not MISSING:
-            parameters['limit'] = str(self._get_limit(endpoint, limit))
-        if offset is not MISSING:
-            parameters['offset'] = str(offset)
-        if fields is not MISSING:
-            parsed_fields = Field.from_list(fields)
-            if endpoint.is_anime:
-                parameters['fields'] = ','.join(
-                    [f.value for f in parsed_fields if f.is_anime])
-            else:
-                parameters['fields'] = ','.join(
-                    [f.value for f in parsed_fields if f.is_manga])
-            parameters['fields'] += ',list_status'
-        else:
-            parameters['fields'] = 'list_status'
-        if status is not MISSING:
-            if isinstance(status, str):
-                value = status
-            else:
-                value = status.value
-            parameters['status'] = value
-        if sort is not MISSING:
-            if isinstance(sort, str):
-                value = sort   # NOTE: default sort is by title
-            else:
-                value = sort.value
-            parameters['sort'] = value
-        # nsfw overrides the value stored in self.include_nsfw
-        if nsfw is MISSING:
-            if self.include_nsfw:
-                parameters['nsfw'] = 'true'
-        elif nsfw:
-            parameters['nsfw'] = 'true'
-        return parameters
-
-    def _build_topic_parameters(
+    def _build_parameters(
         self,
         endpoint: Endpoint,
         *,
         query: str = MISSING,
-        board_id: int = MISSING,
-        subboard_id: int = MISSING,
         limit: int = MISSING,
         offset: int = MISSING,
+        fields: Sequence[Union[Field, str]] = MISSING,
+        nsfw: bool = MISSING,
+        status: Union[AnimeListStatus, MangaListStatus, str] = MISSING,
+        sort: Union[AnimeListSort, MangaListSort, SeasonalAnimeSort, str] = MISSING,
+        board_id: int = MISSING,
+        subboard_id: int = MISSING,
         topic_user_name: str = MISSING,
         user_name: str = MISSING
     ) -> Dict[str, str]:
         parameters: Dict[str, str] = {}
-        if query is not MISSING:
-            parameters['q'] = query
-        if board_id is not MISSING:
-            parameters['board_id'] = str(board_id)
-        if subboard_id is not MISSING:
-            parameters['subboard_id'] = str(subboard_id)
-        if limit is not MISSING:
-            parameters['limit'] = str(self._get_limit(endpoint, limit))
-        if offset is not MISSING:
-            parameters['offset'] = str(offset)
-        if topic_user_name is not MISSING:
-            parameters['topic_user_name'] = topic_user_name
-        if user_name is not MISSING:
-            parameters['user_name'] = user_name
-        if not parameters:
-            raise ValueError(
-                'At least one parameter must be specified to search topics.')
+        if not endpoint.is_forum:
+            if query is not MISSING:
+                parameters['q'] = query
+            if limit is not MISSING:
+                parameters['limit'] = str(self._get_limit(endpoint, limit))
+            else:
+                parameters['limit'] = str(self._search_limit)
+            if offset is not MISSING:
+                parameters['offset'] = str(offset)
+            if fields is not MISSING:
+                parsed_fields = Field.from_list(fields)
+                if endpoint.is_anime:
+                    parameters['fields'] = ','.join(
+                        [f.value for f in parsed_fields if f.is_anime])
+                else:
+                    parameters['fields'] = ','.join(
+                        [f.value for f in parsed_fields if f.is_manga])
+                if endpoint.is_list:
+                    parameters['fields'] += ',list_status'
+            else:
+                if endpoint.is_anime:
+                    parameters['fields'] = ','.join(
+                        [f.value for f in self._anime_fields])
+                else:
+                    parameters['fields'] = ','.join(
+                        [f.value for f in self._manga_fields])
+                if endpoint.is_list:
+                    parameters['fields'] += ',list_status'
+            if sort is not MISSING:
+                if isinstance(sort, str):
+                    value = sort    # NOTE: how can i validate the string?
+                else:
+                    value = sort.value
+                parameters['sort'] = value
+            # nsfw overrides the value stored in self.include_nsfw
+            if nsfw is MISSING:
+                if self.include_nsfw:
+                    parameters['nsfw'] = 'true'
+            elif nsfw:
+                parameters['nsfw'] = 'true'
+        else:  # forum endpoint
+            if query is not MISSING:
+                parameters['q'] = query
+            if board_id is not MISSING:
+                parameters['board_id'] = str(board_id)
+            if subboard_id is not MISSING:
+                parameters['subboard_id'] = str(subboard_id)
+            if limit is not MISSING:
+                parameters['limit'] = str(self._get_limit(endpoint, limit))
+            if offset is not MISSING:
+                parameters['offset'] = str(offset)
+            if topic_user_name is not MISSING:
+                parameters['topic_user_name'] = topic_user_name
+            if user_name is not MISSING:
+                parameters['user_name'] = user_name
+            if not parameters:
+                raise ValueError(
+                    'At least one parameter must be specified to search topics.')
         return parameters
 
     def _get_limit(self, endpoint: Endpoint, value: int) -> int:

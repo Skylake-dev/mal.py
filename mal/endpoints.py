@@ -64,3 +64,12 @@ class Endpoint(Enum):
             self.USER_MANGALIST
         ]
         return self in list_endpoints
+
+    @property
+    def is_forum(self) -> bool:
+        forum_endpoints = [
+            self.FORUM_BOARDS,
+            self.FORUM_TOPIC_DETAIL,
+            self.FORUM_TOPICS
+        ]
+        return self in forum_endpoints
