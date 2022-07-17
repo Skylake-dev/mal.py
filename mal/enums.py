@@ -102,6 +102,19 @@ class AdaptationFrom(BaseEnum):
     web_novel = 'web_novel'
     mixed_media = 'mixed_media'
 
+class RelationType(BaseEnum):
+    sequel = 'sequel'
+    prequel = 'prequel'
+    alternative_setting = 'alternative_setting'
+    alternative_version = 'alternative_version'
+    side_story = 'side_story'
+    parent_story = 'parent_story'
+    summary = 'summary'
+    full_story = 'full_story'
+    spin_off = 'spin_off'
+    other = 'other'
+    character = 'character'
+
 
 class AnimeListStatus(BaseEnum):
     completed = 'completed'
