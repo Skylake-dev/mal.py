@@ -354,7 +354,9 @@ class Client:
         url: str = Endpoint.ANIME_RANKING.url
         response = self._request(url, params=parameters)
         data = response.json()
-        return AnimeRanking(data, ranking_type)
+        ranking = AnimeRanking(data)
+        ranking.type = ranking_type
+        return ranking
 
     def get_manga_ranking(
         self,
@@ -387,7 +389,9 @@ class Client:
         url: str = Endpoint.MANGA_RANKING.url
         response = self._request(url, params=parameters)
         data = response.json()
-        return MangaRanking(data, ranking_type)
+        ranking = MangaRanking(data)
+        ranking.type = ranking_type
+        return ranking
 
     def get_boards(self) -> Sequence[BoardCategory]:
         """Returns a list of the forum boards divided by category."""

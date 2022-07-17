@@ -46,6 +46,18 @@ class PaginatedObject:
         self._prev: Optional[str] = paging['previous'] if 'previous' in paging else None
         self._next: Optional[str] = paging['next'] if 'next' in paging else None
 
+    def has_previous(self) -> bool:
+        """Returns true if there exists a previous page, False otherwise."""
+        if self._prev is None:
+            return False
+        return True
+
+    def has_next(self) -> bool:
+        """Returns true if there exists a next page, False otherwise."""
+        if self._next is None:
+            return False
+        return True
+
     def previous_page(self, client: Client) -> Optional[Self]:
         """Returns a new object with the previous page of results.
         If not present returns None.
@@ -466,12 +478,25 @@ class UserList(PaginatedObject):
 class Ranking(PaginatedObject):
     """Base for representing ranking results."""
 
-    def __init__(self, data: RankingPayload, type: Any) -> None:
+    def __init__(self, data: RankingPayload) -> None:
         super().__init__(data)
         # initialized in subclasses
         self._ranking: Mapping[int, Result]
-        self.type = type
         self.raw: RankingPayload
+        url: Optional[str] = None
+        # extract type from the url
+        if self.has_previous():
+            url = self._prev
+        elif self.has_next():
+            url = self._next
+        if url is not None:
+            parameters = url.split('&')
+            for param in parameters:
+                if param.startswith('ranking_type'):
+                    self._type = param.split('=')[1]
+        # if url is missing leave empty
+        else:
+            self._type = MISSING
 
     def __iter__(self) -> Iterator[int]:
         return iter(self._ranking)
@@ -480,6 +505,6 @@ class Ranking(PaginatedObject):
         return len(self._ranking)
 
     def __str__(self) -> str:
-        s = f'Ranking by {self.type}\n'
+        s = f'Ranking by {self._type}\n'
         s += '\n'.join([f'{rank} - {self._ranking[rank]}' for rank in self._ranking])
         return s

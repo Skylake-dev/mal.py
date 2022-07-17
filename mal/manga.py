@@ -247,15 +247,24 @@ class MangaRanking(Ranking):
         raw: The raw json data for this object as returned by the API.
     """
 
-    def __init__(self, data: MangaRankingPayload, type: Union[str, MangaRankingType]) -> None:
-        super().__init__(data, type)
+    def __init__(self, data: MangaRankingPayload) -> None:
+        super().__init__(data)
         self._ranking: Dict[int, Manga] = {}
         for node in data['data']:
             self._ranking[node['ranking']['rank']] = Manga(node['node'])
+        self.raw: MangaRankingPayload = data
+        if self._type is not MISSING:
+            self._type: MangaRankingType = MangaRankingType(self._type)
+
+    @property
+    def type(self) -> MangaRankingType:
+        return self._type
+
+    @type.setter
+    def type(self, type: Union[str, MangaRankingType]) -> None:
         if isinstance(type, str):
             type = MangaRankingType(type)
-        self.type: MangaRankingType = type
-        self.raw: MangaRankingPayload = data
+        self._type = type
 
     def __iter__(self) -> Iterator[int]:
         return super().__iter__()

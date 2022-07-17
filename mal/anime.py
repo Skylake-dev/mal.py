@@ -312,15 +312,24 @@ class AnimeRanking(Ranking):
         raw: The raw json data for this object as returned by the API.
     """
 
-    def __init__(self, data: AnimeRankingPayload, type: Union[str, AnimeRankingType]) -> None:
-        super().__init__(data, type)
+    def __init__(self, data: AnimeRankingPayload) -> None:
+        super().__init__(data)
         self._ranking: Dict[int, Anime] = {}
         for node in data['data']:
             self._ranking[node['ranking']['rank']] = Anime(node['node'])
+        self.raw: AnimeRankingPayload = data
+        if self._type is not MISSING:
+            self._type: AnimeRankingType = AnimeRankingType(self._type)
+
+    @property
+    def type(self) -> AnimeRankingType:
+        return self._type
+
+    @type.setter
+    def type(self, type: Union[str, AnimeRankingType]) -> None:
         if isinstance(type, str):
             type = AnimeRankingType(type)
-        self.type: AnimeRankingType = type
-        self.raw: AnimeRankingPayload = data
+        self._type = type
 
     def __iter__(self) -> Iterator[int]:
         return super().__iter__()
