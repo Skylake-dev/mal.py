@@ -119,7 +119,8 @@ class BaseResult:
         """Creates an Anime object from the received json data."""
         self.id: int = payload['id']
         self.titles: Titles = Titles(payload['title'], MISSING)
-        self._main_picture: PicturePayload = payload['main_picture']
+        self._main_picture: PicturePayload = payload.get(
+            'main_picture', MISSING)
         self.raw: BaseResultPayload = payload
 
     def __int__(self) -> int:
@@ -134,8 +135,12 @@ class BaseResult:
         return self.titles.title
 
     @property
-    def main_picture_url(self) -> str:
-        """URL to the highest resolution picture available for this title."""
+    def main_picture_url(self) -> Optional[str]:
+        """URL to the highest resolution picture available for this title.
+        If no image is available returns None.
+        """
+        if self._main_picture is MISSING:
+            return None
         # the API returns up to two pictures categorized as medium and large
         return self._main_picture['large'] or self._main_picture['medium']
 
