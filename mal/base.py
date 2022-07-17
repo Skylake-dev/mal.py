@@ -474,7 +474,6 @@ class UserList(PaginatedObject):
         return 0.0
 
 
-
 class Ranking(PaginatedObject):
     """Base for representing ranking results."""
 

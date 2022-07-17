@@ -7,6 +7,7 @@ from typing import Any, List, Sequence, Union
 
 _log = logging.getLogger(__name__)
 
+
 class BaseEnumMeta(EnumMeta):
     def __contains__(cls: type[Any], obj: object) -> bool:
         try:
@@ -102,6 +103,7 @@ class AdaptationFrom(BaseEnum):
     web_novel = 'web_novel'
     mixed_media = 'mixed_media'
 
+
 class RelationType(BaseEnum):
     sequel = 'sequel'
     prequel = 'prequel'
@@ -146,6 +148,7 @@ class MangaListSort(BaseEnum):
     title = 'manga_title'
     start_date = 'manga_start_date'
     id = 'manga_id'
+
 
 class SeasonalAnimeSort(BaseEnum):
     score = 'anime_score'

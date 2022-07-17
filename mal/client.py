@@ -14,6 +14,7 @@ from .utils import MISSING
 
 _log = logging.getLogger(__name__)
 
+
 class Client:
     """Offers the interface to make requests."""
 
@@ -42,7 +43,8 @@ class Client:
         if value < 0:
             raise ValueError('limit must be a positive integer')
         self._limit = int(value)
-        _log.info(f'parameter "search_limit" default value set to {self._limit}')
+        _log.info(
+            f'parameter "search_limit" default value set to {self._limit}')
 
     @property
     def anime_fields(self) -> List[Field]:
@@ -64,7 +66,8 @@ class Client:
     def anime_fields(self, new_fields: Sequence[Union[Field, str]]) -> None:
         fields = Field.from_list(new_fields)
         self._anime_fields = [f for f in fields if f.is_anime]
-        _log.info(f'parameter "anime_fields" default value set to {self._anime_fields}')
+        _log.info(
+            f'parameter "anime_fields" default value set to {self._anime_fields}')
 
     @property
     def manga_fields(self) -> List[Field]:
@@ -85,7 +88,8 @@ class Client:
     def manga_fields(self, new_fields: Sequence[Union[Field, str]]) -> None:
         fields = Field.from_list(new_fields)
         self._manga_fields = [f for f in fields if f.is_manga]
-        _log.info(f'parameter "manga_fields" default value set to {self._manga_fields}')
+        _log.info(
+            f'parameter "manga_fields" default value set to {self._manga_fields}')
 
     @property
     def include_nsfw(self) -> bool:
@@ -130,7 +134,8 @@ class Client:
             ValueError: when the query is not between 3 and 64 characters
         """
         if len(query) > 64 or len(query) < 3:
-            raise ValueError('query parameter needs to be between 3 and 64 characters long')
+            raise ValueError(
+                'query parameter needs to be between 3 and 64 characters long')
         parameters = self._build_parameters(
             Endpoint.ANIME, query=query, limit=limit, offset=offset, fields=fields, nsfw=include_nsfw)
         url: str = Endpoint.ANIME.url
@@ -168,7 +173,8 @@ class Client:
             ValueError: when the query is not between 3 and 64 characters
         """
         if len(query) > 64 or len(query) < 3:
-            raise ValueError('query parameter needs to be between 3 and 64 characters long')
+            raise ValueError(
+                'query parameter needs to be between 3 and 64 characters long')
         parameters = self._build_parameters(
             Endpoint.MANGA, query=query, limit=limit, offset=offset, fields=fields, nsfw=include_nsfw)
         url: str = Endpoint.MANGA.url
@@ -432,8 +438,8 @@ class Client:
             ValueError: no argument was specified
         """
         parameters = self._build_parameters(Endpoint.FORUM_TOPICS, query=query, board_id=board_id,
-                                                  subboard_id=subboard_id, limit=limit, offset=offset,
-                                                  topic_user_name=topic_user_name, user_name=user_name)
+                                            subboard_id=subboard_id, limit=limit, offset=offset,
+                                            topic_user_name=topic_user_name, user_name=user_name)
         url: str = Endpoint.FORUM_TOPICS.url
         response = self._request(url, params=parameters)
         data = response.json()
@@ -473,7 +479,8 @@ class Client:
         response = self._session.get(url)
         _log.info(f'Fetching url: {url}')
         if response.status_code != requests.codes.ok:
-            _log.error(f'Request to {url} errored with code {response.status_code}')
+            _log.error(
+                f'Request to {url} errored with code {response.status_code}')
             response.raise_for_status()
         return response.json()
 
@@ -486,7 +493,8 @@ class Client:
         else:
             response = self._session.get(url)
         if response.status_code != requests.codes.ok:
-            _log.error(f'Request to {url} with parameters {params} errored with code {response.status_code}')
+            _log.error(
+                f'Request to {url} with parameters {params} errored with code {response.status_code}')
             response.raise_for_status()  # TODO: handle error and possible retries
         return response
 
@@ -500,7 +508,8 @@ class Client:
         fields: Sequence[Union[Field, str]] = MISSING,
         nsfw: bool = MISSING,
         status: Union[AnimeListStatus, MangaListStatus, str] = MISSING,
-        sort: Union[AnimeListSort, MangaListSort, SeasonalAnimeSort, str] = MISSING,
+        sort: Union[AnimeListSort, MangaListSort,
+                    SeasonalAnimeSort, str] = MISSING,
         board_id: int = MISSING,
         subboard_id: int = MISSING,
         topic_user_name: str = MISSING,
