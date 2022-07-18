@@ -58,8 +58,8 @@ class Manga(Result):
     will be returned for those, see description of each field.
 
     Attributes:
-        status: current publication status, None if not requested
-        media_type: the type of manga, None if not requested
+        status: current publication status, None if not requested or missing
+        media_type: the type of manga, None if not requested or missing
         authors: list of authors that created the manga
         num_chapters: the number of chapters in total, 0 if not completed
         num_volumes: the number of volumes in total, 0 if not completed

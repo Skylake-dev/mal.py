@@ -99,18 +99,18 @@ class Anime(Result):
     will be returned for those, see description of each field.
 
     Attributes:
-        status: current publication status, None if not requested
-        media_type: the type of anime, None if not requested
+        status: current publication status, None if not requested or missing
+        media_type: the type of anime, None if not requested or missing
         num_episodes: number of episodes
         broadcast_day: day of the week when the episodes are broadcasted
         broadcast_time: time of the day of the broadcasting
-        source: from where the anime was adapted or if it is an original, None if not requested
+        source: from where the anime was adapted or if it is an original, None if not requested or missing
         average_episode_duration: duration of the episodes in seconds
         rating: pg rating of the anime
-        openings: opening themes used for this anime, None if not requested
-        endings: ending themes used for this anime, None if not requested
+        openings: opening themes used for this anime, None if not requested or missing
+        endings: ending themes used for this anime, None if not requested or missing
         statistics: information about how many people have completed this, watching, etc, None
-            if not requested
+            if not requested or missing
         raw: The raw json data for this object as returned by the API.
     """
 
@@ -127,7 +127,7 @@ class Anime(Result):
             year = self._start_season['year']
             return f'{season} {year}'
         else:
-            return 'information not requested or unavailable'
+            return 'information not requested or missing'
 
     @property
     def studios(self) -> str:
@@ -180,7 +180,7 @@ class Anime(Result):
             self.broadcast_time: time = datetime.strptime(
                 _broadcast_info.get('start_time', '00:00'), '%H:%M').time()
         else:
-            self.broadcast_day: str = 'not requested'
+            self.broadcast_day: str = 'not requested or missing'
             self.broadcast_time: time = datetime.strptime(
                 '00:00', '%H:%M').time()
         _source = payload.get('source')
@@ -188,7 +188,7 @@ class Anime(Result):
             _source) if _source else None
         self.average_episode_duration: int = payload.get(
             'average_episode_duration', 0)
-        self.rating: str = payload.get('rating', 'not requested')
+        self.rating: str = payload.get('rating', 'not requested or missing')
         self._studios: Sequence[GenericPayload] = payload.get('studios', [])
         self._start_season: SeasonPayload = payload.get(
             'start_season', MISSING)

@@ -256,7 +256,7 @@ class Result(BaseResult):
         self.titles: Titles = Titles(
             payload['title'], payload.get('alternative_titles', MISSING))
         self.synopsis: str = payload.get(
-            'synopsis', 'synopsis was not requested')
+            'synopsis', 'synopsis not requested or missing')
         self.mean: float = payload.get('mean', 0.0)
         self.rank: int = payload.get('rank', 0)
         self.popularity: int = payload.get('popularity', 0)
@@ -264,7 +264,7 @@ class Result(BaseResult):
         self.num_scoring_users: int = payload.get('num_scoring_users', 0)
         self.num_favorites: int = payload.get('num_favorites', 0)
         self.background: str = payload.get(
-            'background', 'background was not requested')
+            'background', 'background not requested or missing')
         self.nsfw: NSFWlevel = NSFWlevel(payload.get('nsfw', 'white'))
         self.genres: List[Genre] = []
         _genres = payload.get('genres', [])
