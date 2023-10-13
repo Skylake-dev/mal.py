@@ -1,8 +1,8 @@
 """Module in charge of making requests to the API and managing possible errors."""
-import requests
 import logging
-from typing import Any, List, Dict, Optional, Sequence, Union
+from typing import List, Dict,  Sequence, Union
 
+from .connection import APICallManager
 from .endpoints import Endpoint
 from .anime import Anime, AnimeSearchResults, AnimeList, AnimeRanking, Seasonal
 from .manga import Manga, MangaSearchResults, MangaList, MangaRanking
@@ -19,9 +19,8 @@ class Client:
     """Offers the interface to make requests."""
 
     def __init__(self, client_id: str):
-        self.__client_id: str = client_id
-        self._session: requests.Session = requests.Session()
-        self._session.headers.update({'X-MAL-CLIENT-ID': self.__client_id})
+        self.api_call_manager: APICallManager = APICallManager(
+            client_id=client_id)
         self._limit: int = 10
         self._anime_fields: List[Field] = Field.default_anime()
         self._manga_fields: List[Field] = Field.default_manga()
@@ -139,9 +138,8 @@ class Client:
         parameters = self._build_parameters(
             Endpoint.ANIME, query=query, limit=limit, offset=offset, fields=fields, nsfw=include_nsfw)
         url: str = Endpoint.ANIME.url
-        response = self._request(url, params=parameters)
-        data = response.json()
-        results = AnimeSearchResults(data)
+        data = self.api_call_manager.api_call(url, params=parameters)
+        results = AnimeSearchResults(data, self.api_call_manager)
         return results
 
     def manga_search(
@@ -178,9 +176,8 @@ class Client:
         parameters = self._build_parameters(
             Endpoint.MANGA, query=query, limit=limit, offset=offset, fields=fields, nsfw=include_nsfw)
         url: str = Endpoint.MANGA.url
-        response = self._request(url, params=parameters)
-        data = response.json()
-        results = MangaSearchResults(data)
+        data = self.api_call_manager.api_call(url, params=parameters)
+        results = MangaSearchResults(data, self.api_call_manager)
         return results
 
     def get_anime(self, id: Union[int, str], *, fields: Sequence[Union[Field, str]] = MISSING) -> Anime:
@@ -198,9 +195,8 @@ class Client:
         parameters = self._build_parameters(
             Endpoint.ANIME, fields=fields)
         url: str = Endpoint.ANIME.url + '/' + self._get_as_id(id)
-        response = self._request(url, params=parameters)
-        data = response.json()
-        return Anime(data)
+        data = self.api_call_manager.api_call(url, params=parameters)
+        return Anime(data, self.api_call_manager)
 
     def get_manga(self, id: Union[int, str], *, fields: Sequence[Union[Field, str]] = MISSING) -> Manga:
         """Get the details for a specific manga given the id.
@@ -217,9 +213,8 @@ class Client:
         parameters = self._build_parameters(
             Endpoint.ANIME, fields=fields)
         url: str = Endpoint.MANGA.url + '/' + self._get_as_id(id)
-        response = self._request(url, params=parameters)
-        data = response.json()
-        return Manga(data)
+        data = self.api_call_manager.api_call(url, params=parameters)
+        return Manga(data, self.api_call_manager)
 
     def get_anime_list(
         self,
@@ -251,9 +246,8 @@ class Client:
         parameters = self._build_parameters(
             Endpoint.USER_ANIMELIST, limit=limit, offset=offset, fields=fields, status=status, nsfw=include_nsfw, sort=sort)
         url = Endpoint.USER_ANIMELIST.url.replace('{username}', username)
-        response = self._request(url, params=parameters)
-        data = response.json()
-        return AnimeList(data)
+        data = self.api_call_manager.api_call(url, params=parameters)
+        return AnimeList(data, self.api_call_manager)
 
     def get_manga_list(
         self,
@@ -285,9 +279,8 @@ class Client:
         parameters = self._build_parameters(
             Endpoint.USER_MANGALIST, limit=limit, offset=offset, fields=fields, status=status, nsfw=include_nsfw, sort=sort)
         url = Endpoint.USER_MANGALIST.url.replace('{username}', username)
-        response = self._request(url, params=parameters)
-        data = response.json()
-        return MangaList(data)
+        data = self.api_call_manager.api_call(url, params=parameters)
+        return MangaList(data, self.api_call_manager)
 
     def get_seasonal_anime(
         self,
@@ -324,9 +317,8 @@ class Client:
         parameters = self._build_parameters(
             Endpoint.ANIME_SEASONAL, limit=limit, offset=offset, fields=fields, sort=sort, nsfw=include_nsfw)
         url = f'{Endpoint.ANIME_SEASONAL}/{year}/{season}'
-        response = self._request(url, params=parameters)
-        data = response.json()
-        results: Seasonal = Seasonal(data)
+        data = self.api_call_manager.api_call(url, params=parameters)
+        results: Seasonal = Seasonal(data, self.api_call_manager)
         return results
 
     def get_anime_ranking(
@@ -358,9 +350,8 @@ class Client:
             ranking_type = AnimeRankingType(ranking_type)
         parameters['ranking_type'] = f'{ranking_type}'
         url: str = Endpoint.ANIME_RANKING.url
-        response = self._request(url, params=parameters)
-        data = response.json()
-        ranking = AnimeRanking(data)
+        data = self.api_call_manager.api_call(url, params=parameters)
+        ranking = AnimeRanking(data, self.api_call_manager)
         ranking.type = ranking_type
         return ranking
 
@@ -393,17 +384,15 @@ class Client:
             ranking_type = MangaRankingType(ranking_type)
         parameters['ranking_type'] = f'{ranking_type}'
         url: str = Endpoint.MANGA_RANKING.url
-        response = self._request(url, params=parameters)
-        data = response.json()
-        ranking = MangaRanking(data)
+        data = self.api_call_manager.api_call(url, params=parameters)
+        ranking = MangaRanking(data, self.api_call_manager)
         ranking.type = ranking_type
         return ranking
 
     def get_boards(self) -> Sequence[BoardCategory]:
         """Returns a list of the forum boards divided by category."""
         url: str = Endpoint.FORUM_BOARDS.url
-        response = self._request(url)
-        data = response.json()
+        data = self.api_call_manager.api_call(url)
         categories: List[BoardCategory] = []
         for category in data['categories']:
             categories.append(BoardCategory(category))
@@ -441,9 +430,8 @@ class Client:
                                             subboard_id=subboard_id, limit=limit, offset=offset,
                                             topic_user_name=topic_user_name, user_name=user_name)
         url: str = Endpoint.FORUM_TOPICS.url
-        response = self._request(url, params=parameters)
-        data = response.json()
-        return ForumTopics(data, query)
+        data = self.api_call_manager.api_call(url, params=parameters)
+        return ForumTopics(data, query, self.api_call_manager)
 
     def get_topic_details(
         self,
@@ -468,35 +456,8 @@ class Client:
         if offset is not MISSING:
             parameters['offset'] = str(offset)
         url: str = f'{Endpoint.FORUM_TOPIC_DETAIL}/{topic_id}'
-        response = self._request(url, params=parameters)
-        data = response.json()
+        data = self.api_call_manager.api_call(url, params=parameters)
         return Discussion(data['data'])
-
-    def get_url(self, url: Optional[str]) -> Any:
-        """Get the raw json data from the given url. Mostly for internal use."""
-        if url is None:
-            return None
-        response = self._session.get(url)
-        _log.info(f'Fetching url: {url}')
-        if response.status_code != requests.codes.ok:
-            _log.error(
-                f'Request to {url} errored with code {response.status_code}')
-            response.raise_for_status()
-        return response.json()
-
-    def _request(self, url: str, params: Dict[str, str] = MISSING) -> requests.Response:
-        """Handles all the requests that are made and checks the status code of the response.
-        If a requests raises an exception it is propagated.
-        """
-        if params is not MISSING:
-            response = self._session.get(url, params=params)
-        else:
-            response = self._session.get(url)
-        if response.status_code != requests.codes.ok:
-            _log.error(
-                f'Request to {url} with parameters {params} errored with code {response.status_code}')
-            response.raise_for_status()  # TODO: handle error and possible retries
-        return response
 
     def _build_parameters(
         self,
@@ -515,71 +476,66 @@ class Client:
         topic_user_name: str = MISSING,
         user_name: str = MISSING
     ) -> Dict[str, str]:
+        """Interal function to build the parameter dictionary with some sanity checks."""
         parameters: Dict[str, str] = {}
-        if not endpoint.is_forum:
-            if query is not MISSING:
-                parameters['q'] = query
-            if limit is not MISSING:
-                parameters['limit'] = str(self._get_limit(endpoint, limit))
+        if query is not MISSING:
+            parameters['q'] = query
+        if limit is not MISSING:
+            parameters['limit'] = str(self._get_limit(endpoint, limit))
+        else:
+            parameters['limit'] = str(self._limit)
+        if offset is not MISSING:
+            parameters['offset'] = str(offset)
+        if fields is not MISSING:
+            parsed_fields = Field.from_list(fields)
+            if endpoint.is_anime:
+                parameters['fields'] = ','.join(
+                    [f.value for f in parsed_fields if f.is_anime])
             else:
-                parameters['limit'] = str(self._limit)
-            if offset is not MISSING:
-                parameters['offset'] = str(offset)
-            if fields is not MISSING:
-                parsed_fields = Field.from_list(fields)
-                if endpoint.is_anime:
-                    parameters['fields'] = ','.join(
-                        [f.value for f in parsed_fields if f.is_anime])
-                else:
-                    parameters['fields'] = ','.join(
-                        [f.value for f in parsed_fields if f.is_manga])
-                if endpoint.is_list:
-                    parameters['fields'] += ',list_status'
+                parameters['fields'] = ','.join(
+                    [f.value for f in parsed_fields if f.is_manga])
+            if endpoint.is_list:
+                parameters['fields'] += ',list_status'
+        else:
+            if endpoint.is_anime:
+                parameters['fields'] = ','.join(
+                    [f.value for f in self._anime_fields])
             else:
-                if endpoint.is_anime:
-                    parameters['fields'] = ','.join(
-                        [f.value for f in self._anime_fields])
-                else:
-                    parameters['fields'] = ','.join(
-                        [f.value for f in self._manga_fields])
-                if endpoint.is_list:
-                    parameters['fields'] += ',list_status'
-            if status is not MISSING:
-                if isinstance(status, str):
-                    value = status
-                else:
-                    value = status.value
-                parameters['status'] = value
-            if sort is not MISSING:
-                if isinstance(sort, str):
-                    value = sort    # NOTE: how can i validate the string?
-                else:
-                    value = sort.value
-                parameters['sort'] = value
-            # nsfw overrides the value stored in self.include_nsfw
-            if nsfw is MISSING:
-                if self.include_nsfw:
-                    parameters['nsfw'] = 'true'
-            elif nsfw:
+                parameters['fields'] = ','.join(
+                    [f.value for f in self._manga_fields])
+            if endpoint.is_list:
+                parameters['fields'] += ',list_status'
+        if status is not MISSING:
+            if isinstance(status, str):
+                value = status
+            else:
+                value = status.value
+            parameters['status'] = value
+        if sort is not MISSING:
+            if isinstance(sort, str):
+                value = sort    # NOTE: how can i validate the string?
+            else:
+                value = sort.value
+            parameters['sort'] = value
+        # nsfw overrides the value stored in self.include_nsfw
+        if nsfw is not MISSING:
+            if nsfw:
                 parameters['nsfw'] = 'true'
-        else:  # forum endpoint
-            if query is not MISSING:
-                parameters['q'] = query
-            if board_id is not MISSING:
-                parameters['board_id'] = str(board_id)
-            if subboard_id is not MISSING:
-                parameters['subboard_id'] = str(subboard_id)
-            if limit is not MISSING:
-                parameters['limit'] = str(self._get_limit(endpoint, limit))
-            if offset is not MISSING:
-                parameters['offset'] = str(offset)
-            if topic_user_name is not MISSING:
-                parameters['topic_user_name'] = topic_user_name
-            if user_name is not MISSING:
-                parameters['user_name'] = user_name
-            if not parameters:
-                raise ValueError(
-                    'At least one parameter must be specified to search topics.')
+        else:
+            if self.include_nsfw:
+                parameters['nsfw'] = 'true'
+        if board_id is not MISSING:
+            parameters['board_id'] = str(board_id)
+        if subboard_id is not MISSING:
+            parameters['subboard_id'] = str(subboard_id)
+        if limit is not MISSING:
+            parameters['limit'] = str(self._get_limit(endpoint, limit))
+        if offset is not MISSING:
+            parameters['offset'] = str(offset)
+        if topic_user_name is not MISSING:
+            parameters['topic_user_name'] = topic_user_name
+        if user_name is not MISSING:
+            parameters['user_name'] = user_name
         return parameters
 
     def _get_limit(self, endpoint: Endpoint, value: int) -> int:

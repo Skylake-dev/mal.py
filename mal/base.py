@@ -5,6 +5,7 @@ import logging
 from datetime import datetime, date
 from typing import Any, Dict, Iterator, List, Mapping, Optional, Sequence, TYPE_CHECKING, Union
 
+from .connection import APICallManager
 from .utils import MISSING
 from .titles import Titles
 from .enums import NSFWlevel, Field
@@ -27,13 +28,6 @@ _log = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from typing_extensions import Self
-    # the next line causes an error in vscode + pylance because it is marked as
-    # an import cycle, but it is there only for type hinting purposes
-    # you can disable this by adding the following lines to your settings.json
-    #     "python.analysis.diagnosticSeverityOverrides": {
-    #         "reportImportCycles": "none"
-    #     },
-    from .client import Client
 
 
 class PaginatedObject:
@@ -41,10 +35,11 @@ class PaginatedObject:
     to request the next page.
     """
 
-    def __init__(self, data: PaginatedPayload) -> None:
+    def __init__(self, data: PaginatedPayload, api_call_manager: APICallManager) -> None:
         paging = data['paging']
         self._prev: Optional[str] = paging['previous'] if 'previous' in paging else None
         self._next: Optional[str] = paging['next'] if 'next' in paging else None
+        self._api_call_manager: APICallManager = api_call_manager
 
     def has_previous(self) -> bool:
         """Returns true if there exists a previous page, False otherwise."""
@@ -58,7 +53,7 @@ class PaginatedObject:
             return False
         return True
 
-    def previous_page(self, client: Client) -> Optional[Self]:
+    def previous_page(self) -> Optional[Self]:
         """Returns a new object with the previous page of results.
         If not present returns None.
 
@@ -66,21 +61,18 @@ class PaginatedObject:
 
             If you don't want to deal with paginated results consider
             increasing the 'limit' parameter in your queries
-
-        Parameters:
-            client: the client used to make requests
         """
         if self._prev is None:
             _log.info('No previous page available')
             return None
         _log.info(f'Requesting previous page at {self._prev}')
-        data: PaginatedPayload = client.get_url(self._prev)
+        data: PaginatedPayload = self._api_call_manager.api_call(self._prev)
         if data:
-            return self.__class__(data)
+            return self.__class__(data, self._api_call_manager)
         else:
             return None
 
-    def next_page(self, client: Client) -> Optional[Self]:
+    def next_page(self) -> Optional[Self]:
         """Returns a new object with the next page of results.
         If not present returns None.
 
@@ -88,17 +80,14 @@ class PaginatedObject:
 
             If you don't want to deal with paginated results consider
             increasing the 'limit' parameter in your queries
-
-        Parameters:
-            client: the client used to make requests
         """
         if self._next is None:
             _log.info('No next page available')
             return None
         _log.info(f'Requesting next page at {self._next}')
-        data: PaginatedPayload = client.get_url(self._next)
+        data: PaginatedPayload = self._api_call_manager.api_call(self._next)
         if data:
-            return self.__class__(data)
+            return self.__class__(data, self._api_call_manager)
         else:
             return None
 
@@ -251,8 +240,9 @@ class Result(BaseResult):
         raw: The raw json data for this object as returned by the API.
     """
 
-    def __init__(self, payload: ResultPayload) -> None:
+    def __init__(self, payload: ResultPayload, api_call_manager: APICallManager) -> None:
         super().__init__(payload)
+        self._api_manager: APICallManager = api_call_manager
         self.titles: Titles = Titles(
             payload['title'], payload.get('alternative_titles', MISSING))
         self.synopsis: str = payload.get(
@@ -351,12 +341,7 @@ class Result(BaseResult):
         """Placeholder for the url to request this title from the API."""
         return 'API URL placeholder'
 
-    def load_fields(
-        self,
-        client: Client,
-        *,
-        fields: Sequence[Union[str, Field]] = MISSING
-    ) -> Any:
+    def load_fields(self, *, fields: Sequence[Union[str, Field]] = MISSING) -> Any:
         """Load additional information for this title.
 
         .. note::
@@ -373,13 +358,13 @@ class Result(BaseResult):
                 are refreshed. This argument is optional, if not passed it uses the default
                 fields that are set in the client.
         """
-        parameters = ''
+        parameters: Dict[str, str] = {}
         if fields is not MISSING:
             # need to build parameters manually
             parsed_fields = Field.from_list(fields)
             # NOTE: i skip check on field validity
-            parameters = '?fields=' + ','.join(f.value for f in parsed_fields)
-        payload = client.get_url(f'{self.api_url}{parameters}')
+            parameters['fields'] = ','.join([f.value for f in parsed_fields])
+        payload = self._api_manager.api_call(self.api_url, parameters)
         return payload
 
 
@@ -430,10 +415,11 @@ class ListStatus:
 class UserListEntry:
     """Represents an entry in a user list."""
 
-    def __init__(self, data: ListEntryPayload) -> None:
+    def __init__(self, data: ListEntryPayload, api_call_manager: APICallManager) -> None:
         # do not initialize the values because they are overridden in the subclasses
         self.entry: BaseResult
         self.list_status: ListStatus
+        self.api_call_manager: APICallManager
 
     def __str__(self) -> str:
         return f'{self.entry.title}'
@@ -452,8 +438,8 @@ class UserList(PaginatedObject):
         raw: The raw json data for this object as returned by the API.
     """
 
-    def __init__(self, data: Union[AnimeListPayload, MangaListPayload]) -> None:
-        super().__init__(data)
+    def __init__(self, data: Union[AnimeListPayload, MangaListPayload], api_call_manager: APICallManager) -> None:
+        super().__init__(data, api_call_manager)
         # initialized in subclass to avoid doing it twice
         self._list: Sequence[UserListEntry]
         self.average_score: float  # computed in subclasses where i have data
@@ -482,8 +468,8 @@ class UserList(PaginatedObject):
 class Ranking(PaginatedObject):
     """Base for representing ranking results."""
 
-    def __init__(self, data: RankingPayload) -> None:
-        super().__init__(data)
+    def __init__(self, data: RankingPayload, api_call_manager: APICallManager) -> None:
+        super().__init__(data, api_call_manager)
         # initialized in subclasses
         self._ranking: Mapping[int, Result]
         self.raw: RankingPayload

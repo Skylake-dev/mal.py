@@ -1,7 +1,8 @@
 from __future__ import annotations
 from datetime import datetime, time
-from typing import Dict, List, Iterator, Optional, Sequence, TYPE_CHECKING, Union
+from typing import Dict, List, Iterator, Optional, Sequence, Union
 
+from .connection import APICallManager
 from .utils import MISSING
 from .endpoints import Endpoint
 from .enums import AdaptationFrom, AnimeStatus, AnimeMediaType, AnimeListStatus, AnimeRankingType, Field
@@ -19,15 +20,6 @@ from .typed import (
     MusicPayload,
     StatisticsPayload
 )
-
-if TYPE_CHECKING:
-    # the next line causes an error in vscode + pylance because it is marked as
-    # an import cycle, but it is there only for type hinting purposes
-    # you can disable this by adding the following lines to your settings.json
-    #     "python.analysis.diagnosticSeverityOverrides": {
-    #         "reportImportCycles": "none"
-    #     },
-    from .client import Client
 
 
 class Song:
@@ -114,9 +106,9 @@ class Anime(Result):
         raw: The raw json data for this object as returned by the API.
     """
 
-    def __init__(self, payload: AnimePayload):
+    def __init__(self, payload: AnimePayload, api_call_manager: APICallManager):
         """Creates an Anime object from the received json data."""
-        super().__init__(payload)
+        super().__init__(payload, api_call_manager)
         self._load_data(payload)
 
     @property
@@ -159,9 +151,9 @@ class Anime(Result):
         """URL to request this title from the MAL API."""
         return f'{Endpoint.ANIME}/{self.id}'
 
-    def load_fields(self, client: Client, *, fields: Sequence[Union[str, Field]] = MISSING) -> None:
+    def load_fields(self, *, fields: Sequence[Union[str, Field]] = MISSING) -> None:
         # NOTE: maybe check if fields are for anime?
-        payload = super().load_fields(client, fields=fields)
+        payload = super().load_fields(fields=fields)
         self._load_data(payload)
 
     def _load_data(self, payload: AnimePayload) -> None:
@@ -211,11 +203,11 @@ class AnimeSearchResults(PaginatedObject):
         raw: The raw json data for this object as returned by the API.
     """
 
-    def __init__(self, data: AnimeSearchPayload) -> None:
-        super().__init__(data)
+    def __init__(self, data: AnimeSearchPayload, api_call_manager: APICallManager) -> None:
+        super().__init__(data, api_call_manager)
         self._results: List[Anime] = []
         for el in data['data']:
-            self._results.append(Anime(el['node']))
+            self._results.append(Anime(el['node'], api_call_manager))
         self.raw: AnimeSearchPayload = data
 
     def __iter__(self) -> Iterator[Anime]:
@@ -274,8 +266,8 @@ class AnimeListEntry(UserListEntry):
         list_status: all the information about the status
     """
 
-    def __init__(self, data: AnimeListEntryPayload) -> None:
-        self.entry: Anime = Anime(data['node'])
+    def __init__(self, data: AnimeListEntryPayload, api_call_manager: APICallManager) -> None:
+        self.entry: Anime = Anime(data['node'], api_call_manager)
         self.list_status: AnimeListEntryStatus = AnimeListEntryStatus(
             data['list_status'])
 
@@ -286,12 +278,12 @@ class AnimeListEntry(UserListEntry):
 class AnimeList(UserList):
     """Iterable object containing the anime list of a user."""
 
-    def __init__(self, data: AnimeListPayload) -> None:
-        super().__init__(data)
+    def __init__(self, data: AnimeListPayload, api_call_manager: APICallManager) -> None:
+        super().__init__(data, api_call_manager)
         self.raw: AnimeListPayload = data
         self._list: List[AnimeListEntry] = []
         for item in data['data']:
-            self._list.append(AnimeListEntry(item))
+            self._list.append(AnimeListEntry(item, api_call_manager))
         self.average_score: float = self._compute_average_score()
 
     def __iter__(self) -> Iterator[AnimeListEntry]:
@@ -312,11 +304,12 @@ class AnimeRanking(Ranking):
         raw: The raw json data for this object as returned by the API.
     """
 
-    def __init__(self, data: AnimeRankingPayload) -> None:
-        super().__init__(data)
+    def __init__(self, data: AnimeRankingPayload, api_call_manager: APICallManager) -> None:
+        super().__init__(data, api_call_manager)
         self._ranking: Dict[int, Anime] = {}
         for node in data['data']:
-            self._ranking[node['ranking']['rank']] = Anime(node['node'])
+            self._ranking[node['ranking']['rank']] = Anime(
+                node['node'], api_call_manager)
         self.raw: AnimeRankingPayload = data
         if self._type is not MISSING:
             self._type: AnimeRankingType = AnimeRankingType(self._type)
@@ -361,11 +354,11 @@ class Seasonal(PaginatedObject):
         raw: The raw json data for this object as returned by the API.
     """
 
-    def __init__(self, data: SeasonalAnimePayload) -> None:
-        super().__init__(data)
+    def __init__(self, data: SeasonalAnimePayload, api_call_manager: APICallManager) -> None:
+        super().__init__(data, api_call_manager)
         self._list: List[Anime] = []
         for item in data['data']:
-            self._list.append(Anime(item['node']))
+            self._list.append(Anime(item['node'], api_call_manager))
         self.year: int = data['season']['year']
         self.season: str = data['season']['season']
         self.raw: SeasonalAnimePayload = data
