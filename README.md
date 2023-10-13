@@ -1,5 +1,7 @@
 # mal.py
 
+UPDATE: i am working on a major revision of the project, stay tuned!
+
 [![Downloads](https://pepy.tech/badge/mal-api-py)](https://pepy.tech/project/mal-api-py)
 
 A [MyAnimeList](https://myanimelist.net) API wrapper written in Python.
