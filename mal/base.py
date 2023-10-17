@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime, date
-from typing import Any, Dict, Iterator, List, Mapping, Optional, Sequence, TYPE_CHECKING, Union
+from typing import Any, Dict, Iterator, List, Optional, Sequence, TYPE_CHECKING, Union
 
 from .connection import APICallManager
 from .utils import MISSING
@@ -110,7 +110,7 @@ class BaseResult:
         self.titles: Titles = Titles(payload['title'], MISSING)
         self._main_picture: PicturePayload = payload.get(
             'main_picture', MISSING)
-        self.raw: BaseResultPayload = payload
+        self.raw: Any = payload
 
     def __int__(self) -> int:
         return self.id
@@ -272,7 +272,7 @@ class Result(BaseResult):
         self._end: str = payload.get('end_date', MISSING)
         self._created_at: str = payload.get('created_at', MISSING)
         self._updated_at: str = payload.get('updated_at', MISSING)
-        self.raw: ResultPayload = payload
+        self.raw: Any = payload
 
     def __str__(self) -> str:
         return super().__str__()
@@ -417,8 +417,8 @@ class UserListEntry:
 
     def __init__(self, data: ListEntryPayload, api_call_manager: APICallManager) -> None:
         # do not initialize the values because they are overridden in the subclasses
-        self.entry: BaseResult
-        self.list_status: ListStatus
+        self.entry: Any
+        self.list_status: Any
         self.api_call_manager: APICallManager
 
     def __str__(self) -> str:
@@ -441,9 +441,9 @@ class UserList(PaginatedObject):
     def __init__(self, data: Union[AnimeListPayload, MangaListPayload], api_call_manager: APICallManager) -> None:
         super().__init__(data, api_call_manager)
         # initialized in subclass to avoid doing it twice
-        self._list: Sequence[UserListEntry]
+        self._list: Any
         self.average_score: float  # computed in subclasses where i have data
-        self.raw: Union[AnimeListPayload, MangaListPayload]
+        self.raw: Any
 
     # __iter__ implemented in subclasses
 
@@ -471,8 +471,8 @@ class Ranking(PaginatedObject):
     def __init__(self, data: RankingPayload, api_call_manager: APICallManager) -> None:
         super().__init__(data, api_call_manager)
         # initialized in subclasses
-        self._ranking: Mapping[int, Result]
-        self.raw: RankingPayload
+        self._ranking: Any
+        self.raw: Any
         url: Optional[str] = None
         # extract type from the url
         if self.has_previous():
