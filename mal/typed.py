@@ -1,5 +1,5 @@
 """Support classes for type hinting."""
-from typing import Sequence, TypedDict
+from typing import Optional, Sequence, TypedDict
 
 
 class TitlesPayload(TypedDict, total=False):
@@ -10,7 +10,7 @@ class TitlesPayload(TypedDict, total=False):
 
 class PicturePayload(TypedDict):
     medium: str
-    large: str
+    large: Optional[str]
 
 
 class GenericPayload(TypedDict):
