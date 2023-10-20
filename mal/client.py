@@ -104,6 +104,27 @@ class Client:
         self._include_nsfw = value
         _log.info(f'parameter "nsfw" default value set to {value}')
 
+    @property
+    def delay(self) -> float:
+        """Returns the current delay. This is the amount of time in seconds that
+        each request will be delayed. The default value is 1 second.
+        Useful to avoid being ratelimited or banned when doing bulk requests.
+
+        Anything above 1 second is safe for continuous requests. You can set it lower if you are only
+        doing a few requests at a time. Unfortunately MAL doens't specify exact ratelitis, if you start getting
+        403s then you are being blocked.
+        """
+        return self.api_call_manager.delay
+
+    @delay.setter
+    def delay(self, delay: float) -> None:
+        if delay < 0:
+            raise ValueError('delay cannot be negative')
+        if delay < 1.0:
+            _log.warning(
+                'Attention: using delays shorter than 1s for bulk request may result in temporary or permanent blocking')
+        self.api_call_manager.delay = delay
+
     def anime_search(
         self,
         query: str,
