@@ -1,10 +1,9 @@
 from __future__ import annotations
-from typing import Dict, List, Iterator, Optional, Sequence, Union
+from typing import Dict, List, Iterator, Optional, Union
 
-from .connection import APICallManager
 from .endpoints import Endpoint
 from .utils import MISSING
-from .enums import MangaStatus, MangaMediaType, MangaListStatus, MangaRankingType, Field
+from .enums import MangaStatus, MangaMediaType, MangaListStatus, MangaRankingType
 from .base import Result, ListStatus, UserListEntry, UserList, Ranking, PaginatedObject
 from .typed import (
     AuthorPayload,
@@ -58,9 +57,9 @@ class Manga(Result):
         raw: The raw json data for this object as returned by the API.
     """
 
-    def __init__(self, payload: MangaPayload, api_call_manager: APICallManager) -> None:
+    def __init__(self, payload: MangaPayload) -> None:
         """Creates an Manga object from the received json data."""
-        super().__init__(payload, api_call_manager)
+        super().__init__(payload)
         self._load_data(payload)
 
     @property
@@ -103,11 +102,6 @@ class Manga(Result):
         """URL to request this title from the MAL API."""
         return f'{Endpoint.MANGA}/{self.id}'
 
-    def load_fields(self, *, fields: Sequence[Union[str, Field]] = MISSING) -> None:
-        # NOTE: maybe check if fields are for anime?
-        payload = super().load_fields(fields=fields)
-        self._load_data(payload)
-
     def _load_data(self, payload: MangaPayload) -> None:
         """Populate all attributes, for internal use."""
         _status = payload.get('status')
@@ -136,11 +130,11 @@ class MangaSearchResults(PaginatedObject):
         raw: The raw json data for this object as returned by the API.
     """
 
-    def __init__(self, data: MangaSearchPayload, api_call_manager: APICallManager) -> None:
-        super().__init__(data, api_call_manager)
+    def __init__(self, data: MangaSearchPayload) -> None:
+        super().__init__(data)
         self._results: List[Manga] = []
         for el in data['data']:
-            self._results.append(Manga(el['node'], api_call_manager))
+            self._results.append(Manga(el['node']))
         self.raw: MangaSearchPayload = data
 
     def __iter__(self) -> Iterator[Manga]:
@@ -201,8 +195,8 @@ class MangaListEntry(UserListEntry):
         list_status: all the information about the status
     """
 
-    def __init__(self, data: MangaListEntryPayload, api_call_manager: APICallManager) -> None:
-        self.entry: Manga = Manga(data['node'], api_call_manager)
+    def __init__(self, data: MangaListEntryPayload) -> None:
+        self.entry: Manga = Manga(data['node'])
         self.list_status: MangaListEntryStatus = MangaListEntryStatus(
             data['list_status'])
 
@@ -213,12 +207,12 @@ class MangaListEntry(UserListEntry):
 class MangaList(UserList):
     """Iterable object containing the manga list of a user."""
 
-    def __init__(self, data: MangaListPayload, api_call_manager: APICallManager) -> None:
-        super().__init__(data, api_call_manager)
+    def __init__(self, data: MangaListPayload) -> None:
+        super().__init__(data)
         self.raw: MangaListPayload = data
         self._list: List[MangaListEntry] = []
         for item in data['data']:
-            self._list.append(MangaListEntry(item, api_call_manager))
+            self._list.append(MangaListEntry(item))
         self.average_score: float = self._compute_average_score()
 
     def __iter__(self) -> Iterator[MangaListEntry]:
@@ -239,12 +233,12 @@ class MangaRanking(Ranking):
         raw: The raw json data for this object as returned by the API.
     """
 
-    def __init__(self, data: MangaRankingPayload, api_call_manager: APICallManager) -> None:
-        super().__init__(data, api_call_manager)
+    def __init__(self, data: MangaRankingPayload) -> None:
+        super().__init__(data)
         self._ranking: Dict[int, Manga] = {}
         for node in data['data']:
             self._ranking[node['ranking']['rank']] = Manga(
-                node['node'], api_call_manager)
+                node['node'])
         self.raw: MangaRankingPayload = data
         if self._type is not MISSING:
             self._type: MangaRankingType = MangaRankingType(self._type)

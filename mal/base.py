@@ -3,12 +3,12 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime, date
-from typing import Any, Dict, Iterator, List, Optional, Sequence, TYPE_CHECKING, Union
+from typing import Any, Dict, Iterator, List, Optional, Sequence, Union
 
 from .connection import APICallManager
 from .utils import MISSING
 from .titles import Titles
-from .enums import NSFWlevel, Field
+from .enums import NSFWlevel
 from .genre import Genre
 from .typed import (
     BaseResultPayload,
@@ -26,70 +26,16 @@ from .typed import (
 
 _log = logging.getLogger(__name__)
 
-if TYPE_CHECKING:
-    from typing_extensions import Self
-
 
 class PaginatedObject:
     """Base class for results that can consist of multiple pages. Implements the method
     to request the next page.
     """
 
-    def __init__(self, data: PaginatedPayload, api_call_manager: APICallManager) -> None:
+    def __init__(self, data: PaginatedPayload) -> None:
         paging = data['paging']
-        self._prev: Optional[str] = paging['previous'] if 'previous' in paging else None
-        self._next: Optional[str] = paging['next'] if 'next' in paging else None
-        self._api_call_manager: APICallManager = api_call_manager
-
-    def has_previous(self) -> bool:
-        """Returns true if there exists a previous page, False otherwise."""
-        if self._prev is None:
-            return False
-        return True
-
-    def has_next(self) -> bool:
-        """Returns true if there exists a next page, False otherwise."""
-        if self._next is None:
-            return False
-        return True
-
-    def previous_page(self) -> Optional[Self]:
-        """Returns a new object with the previous page of results.
-        If not present returns None.
-
-        .. note::
-
-            If you don't want to deal with paginated results consider
-            increasing the 'limit' parameter in your queries
-        """
-        if self._prev is None:
-            _log.info('No previous page available')
-            return None
-        _log.info(f'Requesting previous page at {self._prev}')
-        data: PaginatedPayload = self._api_call_manager.api_call(self._prev)
-        if data:
-            return self.__class__(data, self._api_call_manager)
-        else:
-            return None
-
-    def next_page(self) -> Optional[Self]:
-        """Returns a new object with the next page of results.
-        If not present returns None.
-
-        .. note::
-
-            If you don't want to deal with paginated results consider
-            increasing the 'limit' parameter in your queries
-        """
-        if self._next is None:
-            _log.info('No next page available')
-            return None
-        _log.info(f'Requesting next page at {self._next}')
-        data: PaginatedPayload = self._api_call_manager.api_call(self._next)
-        if data:
-            return self.__class__(data, self._api_call_manager)
-        else:
-            return None
+        self.prev_page: Optional[str] = paging['previous'] if 'previous' in paging else None
+        self.next_page: Optional[str] = paging['next'] if 'next' in paging else None
 
 
 class BaseResult:
@@ -240,9 +186,8 @@ class Result(BaseResult):
         raw: The raw json data for this object as returned by the API.
     """
 
-    def __init__(self, payload: ResultPayload, api_call_manager: APICallManager) -> None:
+    def __init__(self, payload: ResultPayload) -> None:
         super().__init__(payload)
-        self._api_manager: APICallManager = api_call_manager
         self.titles: Titles = Titles(
             payload['title'], payload.get('alternative_titles', MISSING))
         self.synopsis: str = payload.get(
@@ -341,32 +286,6 @@ class Result(BaseResult):
         """Placeholder for the url to request this title from the API."""
         return 'API URL placeholder'
 
-    def load_fields(self, *, fields: Sequence[Union[str, Field]] = MISSING) -> Any:
-        """Load additional information for this title.
-
-        .. note::
-
-            This operation requires an extra call to the API. If you know from
-            the beginning the fields that you are going to need it's better to
-            request them all from the start.
-
-        Args:
-            client: The client used to make requests
-
-        Keyword args:
-            fields: The extra fields to request. If some fields are already present they
-                are refreshed. This argument is optional, if not passed it uses the default
-                fields that are set in the client.
-        """
-        parameters: Dict[str, str] = {}
-        if fields is not MISSING:
-            # need to build parameters manually
-            parsed_fields = Field.from_list(fields)
-            # NOTE: i skip check on field validity
-            parameters['fields'] = ','.join([f.value for f in parsed_fields])
-        payload = self._api_manager.api_call(self.api_url, parameters)
-        return payload
-
 
 class ListStatus:
     """Information that is associated to an entry in a user list.
@@ -415,7 +334,7 @@ class ListStatus:
 class UserListEntry:
     """Represents an entry in a user list."""
 
-    def __init__(self, data: ListEntryPayload, api_call_manager: APICallManager) -> None:
+    def __init__(self, data: ListEntryPayload) -> None:
         # do not initialize the values because they are overridden in the subclasses
         self.entry: Any
         self.list_status: Any
@@ -438,8 +357,8 @@ class UserList(PaginatedObject):
         raw: The raw json data for this object as returned by the API.
     """
 
-    def __init__(self, data: Union[AnimeListPayload, MangaListPayload], api_call_manager: APICallManager) -> None:
-        super().__init__(data, api_call_manager)
+    def __init__(self, data: Union[AnimeListPayload, MangaListPayload]) -> None:
+        super().__init__(data)
         # initialized in subclass to avoid doing it twice
         self._list: Any
         self.average_score: float  # computed in subclasses where i have data
@@ -468,17 +387,17 @@ class UserList(PaginatedObject):
 class Ranking(PaginatedObject):
     """Base for representing ranking results."""
 
-    def __init__(self, data: RankingPayload, api_call_manager: APICallManager) -> None:
-        super().__init__(data, api_call_manager)
+    def __init__(self, data: RankingPayload) -> None:
+        super().__init__(data)
         # initialized in subclasses
         self._ranking: Any
         self.raw: Any
         url: Optional[str] = None
         # extract type from the url
-        if self.has_previous():
-            url = self._prev
-        elif self.has_next():
-            url = self._next
+        if self.prev_page is not None:
+            url = self.prev_page
+        elif self.next_page is not None:
+            url = self.next_page
         if url is not None:
             parameters = url.split('&')
             for param in parameters:

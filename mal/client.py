@@ -1,9 +1,10 @@
 """Module in charge of making requests to the API and managing possible errors."""
 import logging
-from typing import List, Dict,  Sequence, Union
+from typing import List, Dict, Optional, Sequence, Union
 
 from .connection import APICallManager
 from .endpoints import Endpoint
+from .base import PaginatedObject
 from .anime import Anime, AnimeSearchResults, AnimeList, AnimeRanking, Seasonal
 from .manga import Manga, MangaSearchResults, MangaList, MangaRanking
 from .forum import BoardCategory, ForumTopics, Discussion
@@ -11,6 +12,7 @@ from .enums import (Field, AnimeListStatus, MangaListStatus, Season,
                     AnimeRankingType, MangaRankingType, AnimeListSort, MangaListSort,
                     SeasonalAnimeSort)
 from .utils import MISSING
+from .typed import PaginatedPayload
 
 _log = logging.getLogger(__name__)
 
@@ -19,7 +21,7 @@ class Client:
     """Offers the interface to make requests."""
 
     def __init__(self, client_id: str):
-        self.api_call_manager: APICallManager = APICallManager(
+        self._api_call_manager: APICallManager = APICallManager(
             client_id=client_id)
         self._limit: int = 10
         self._anime_fields: List[Field] = Field.default_anime()
@@ -114,7 +116,7 @@ class Client:
         doing a few requests at a time. Unfortunately MAL doens't specify exact ratelitis, if you start getting
         403s then you are being blocked.
         """
-        return self.api_call_manager.delay
+        return self._api_call_manager.delay
 
     @delay.setter
     def delay(self, delay: float) -> None:
@@ -123,7 +125,7 @@ class Client:
         if delay < 1.0:
             _log.warning(
                 'Attention: using delays shorter than 1s for bulk request may result in temporary or permanent blocking')
-        self.api_call_manager.delay = delay
+        self._api_call_manager.delay = delay
 
     def anime_search(
         self,
@@ -159,8 +161,8 @@ class Client:
         parameters = self._build_parameters(
             Endpoint.ANIME, query=query, limit=limit, offset=offset, fields=fields, nsfw=include_nsfw)
         url: str = Endpoint.ANIME.url
-        data = self.api_call_manager.api_call(url, params=parameters)
-        results = AnimeSearchResults(data, self.api_call_manager)
+        data = self._api_call_manager.api_call(url, params=parameters)
+        results = AnimeSearchResults(data)
         return results
 
     def manga_search(
@@ -197,8 +199,8 @@ class Client:
         parameters = self._build_parameters(
             Endpoint.MANGA, query=query, limit=limit, offset=offset, fields=fields, nsfw=include_nsfw)
         url: str = Endpoint.MANGA.url
-        data = self.api_call_manager.api_call(url, params=parameters)
-        results = MangaSearchResults(data, self.api_call_manager)
+        data = self._api_call_manager.api_call(url, params=parameters)
+        results = MangaSearchResults(data)
         return results
 
     def get_anime(self, id: Union[int, str], *, fields: Sequence[Union[Field, str]] = MISSING) -> Anime:
@@ -216,8 +218,8 @@ class Client:
         parameters = self._build_parameters(
             Endpoint.ANIME, fields=fields)
         url: str = Endpoint.ANIME.url + '/' + self._get_as_id(id)
-        data = self.api_call_manager.api_call(url, params=parameters)
-        return Anime(data, self.api_call_manager)
+        data = self._api_call_manager.api_call(url, params=parameters)
+        return Anime(data)
 
     def get_manga(self, id: Union[int, str], *, fields: Sequence[Union[Field, str]] = MISSING) -> Manga:
         """Get the details for a specific manga given the id.
@@ -234,8 +236,8 @@ class Client:
         parameters = self._build_parameters(
             Endpoint.ANIME, fields=fields)
         url: str = Endpoint.MANGA.url + '/' + self._get_as_id(id)
-        data = self.api_call_manager.api_call(url, params=parameters)
-        return Manga(data, self.api_call_manager)
+        data = self._api_call_manager.api_call(url, params=parameters)
+        return Manga(data)
 
     def get_anime_list(
         self,
@@ -267,8 +269,8 @@ class Client:
         parameters = self._build_parameters(
             Endpoint.USER_ANIMELIST, limit=limit, offset=offset, fields=fields, status=status, nsfw=include_nsfw, sort=sort)
         url = Endpoint.USER_ANIMELIST.url.replace('{username}', username)
-        data = self.api_call_manager.api_call(url, params=parameters)
-        return AnimeList(data, self.api_call_manager)
+        data = self._api_call_manager.api_call(url, params=parameters)
+        return AnimeList(data)
 
     def get_manga_list(
         self,
@@ -300,8 +302,8 @@ class Client:
         parameters = self._build_parameters(
             Endpoint.USER_MANGALIST, limit=limit, offset=offset, fields=fields, status=status, nsfw=include_nsfw, sort=sort)
         url = Endpoint.USER_MANGALIST.url.replace('{username}', username)
-        data = self.api_call_manager.api_call(url, params=parameters)
-        return MangaList(data, self.api_call_manager)
+        data = self._api_call_manager.api_call(url, params=parameters)
+        return MangaList(data)
 
     def get_seasonal_anime(
         self,
@@ -338,8 +340,8 @@ class Client:
         parameters = self._build_parameters(
             Endpoint.ANIME_SEASONAL, limit=limit, offset=offset, fields=fields, sort=sort, nsfw=include_nsfw)
         url = f'{Endpoint.ANIME_SEASONAL}/{year}/{season}'
-        data = self.api_call_manager.api_call(url, params=parameters)
-        results: Seasonal = Seasonal(data, self.api_call_manager)
+        data = self._api_call_manager.api_call(url, params=parameters)
+        results: Seasonal = Seasonal(data)
         return results
 
     def get_anime_ranking(
@@ -371,8 +373,8 @@ class Client:
             ranking_type = AnimeRankingType(ranking_type)
         parameters['ranking_type'] = f'{ranking_type}'
         url: str = Endpoint.ANIME_RANKING.url
-        data = self.api_call_manager.api_call(url, params=parameters)
-        ranking = AnimeRanking(data, self.api_call_manager)
+        data = self._api_call_manager.api_call(url, params=parameters)
+        ranking = AnimeRanking(data)
         ranking.type = ranking_type
         return ranking
 
@@ -405,15 +407,15 @@ class Client:
             ranking_type = MangaRankingType(ranking_type)
         parameters['ranking_type'] = f'{ranking_type}'
         url: str = Endpoint.MANGA_RANKING.url
-        data = self.api_call_manager.api_call(url, params=parameters)
-        ranking = MangaRanking(data, self.api_call_manager)
+        data = self._api_call_manager.api_call(url, params=parameters)
+        ranking = MangaRanking(data)
         ranking.type = ranking_type
         return ranking
 
     def get_boards(self) -> Sequence[BoardCategory]:
         """Returns a list of the forum boards divided by category."""
         url: str = Endpoint.FORUM_BOARDS.url
-        data = self.api_call_manager.api_call(url)
+        data = self._api_call_manager.api_call(url)
         categories: List[BoardCategory] = []
         for category in data['categories']:
             categories.append(BoardCategory(category))
@@ -451,8 +453,8 @@ class Client:
                                             subboard_id=subboard_id, limit=limit, offset=offset,
                                             topic_user_name=topic_user_name, user_name=user_name)
         url: str = Endpoint.FORUM_TOPICS.url
-        data = self.api_call_manager.api_call(url, params=parameters)
-        return ForumTopics(data, query, self.api_call_manager)
+        data = self._api_call_manager.api_call(url, params=parameters)
+        return ForumTopics(data, query)
 
     def get_topic_details(
         self,
@@ -477,8 +479,54 @@ class Client:
         if offset is not MISSING:
             parameters['offset'] = str(offset)
         url: str = f'{Endpoint.FORUM_TOPIC_DETAIL}/{topic_id}'
-        data = self.api_call_manager.api_call(url, params=parameters)
+        data = self._api_call_manager.api_call(url, params=parameters)
         return Discussion(data['data'])
+
+    def previous_page(self, paginated: PaginatedObject) -> Optional[PaginatedObject]:
+        """Returns a new object with the previous page of results.
+        If not present returns None.
+
+        Args:
+            paginated: an object that supports pagination
+
+        .. note::
+
+            If you don't want to deal with paginated results consider
+            increasing the 'limit' parameter in your queries
+        """
+        if paginated.prev_page is None:
+            _log.info('No previous page available')
+            return None
+        _log.info(f'Requesting previous page at {paginated.prev_page}')
+        data: PaginatedPayload = self._api_call_manager.api_call(
+            paginated.prev_page)
+        if data:
+            return paginated.__class__(data)
+        else:
+            return None
+
+    def next_page(self, paginated: PaginatedObject) -> Optional[PaginatedObject]:
+        """Returns a new object with the next page of results.
+        If not present returns None.
+
+        Args:
+            paginated: an object that supports pagination
+
+        .. note::
+
+            If you don't want to deal with paginated results consider
+            increasing the 'limit' parameter in your queries
+        """
+        if paginated.next_page is None:
+            _log.info('No nextious page available')
+            return None
+        _log.info(f'Requesting nextious page at {paginated.next_page}')
+        data: PaginatedPayload = self._api_call_manager.api_call(
+            paginated.next_page)
+        if data:
+            return paginated.__class__(data)
+        else:
+            return None
 
     def _build_parameters(
         self,

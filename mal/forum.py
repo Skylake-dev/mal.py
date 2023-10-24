@@ -2,7 +2,6 @@ from datetime import datetime
 from typing import List, Iterator, Optional
 
 from .base import PaginatedObject
-from .connection import APICallManager
 
 from .typed import (
     SubBoardPayload,
@@ -130,8 +129,8 @@ class ForumTopics(PaginatedObject):
         raw: The raw json data for this object as returned by the API.
     """
 
-    def __init__(self, data: ForumTopicsPayload, query: str, api_call_manager: APICallManager) -> None:
-        super().__init__(data, api_call_manager)
+    def __init__(self, data: ForumTopicsPayload, query: str) -> None:
+        super().__init__(data)
         self.query: str = query
         self._topics: List[Topic] = []
         for topic in data['data']:
@@ -313,8 +312,8 @@ class TopicDetail(PaginatedObject):
         raw: The raw json data for this object as returned by the API.
     """
 
-    def __init__(self, data: TopicDetailPayload, api_call_manager: APICallManager) -> None:
-        super().__init__(data, api_call_manager)
+    def __init__(self, data: TopicDetailPayload) -> None:
+        super().__init__(data)
         self._discussions: List[Discussion] = []
         for discussion in data['data']:
             self._discussions.append(Discussion(discussion))
