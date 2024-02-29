@@ -18,8 +18,12 @@ readme = ''
 with open('README.md') as f:
     readme = f.read()
 
+# keep this coherent with the requirements.txt in the docs
 extras_require = {
-    'docs': ['sphinx==4.5.0']
+    'docs': [
+        'sphinx==7.1.0',
+        'sphinx-rtd-theme==1.3.0',
+    ]
 }
 
 setup(
