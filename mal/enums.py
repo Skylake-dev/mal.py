@@ -55,6 +55,7 @@ class AnimeMediaType(BaseEnum):
     ova = 'ova'
     special = 'special'
     tv = 'tv'
+    cm = 'cm'
     unknown = 'unknown'
 
 
