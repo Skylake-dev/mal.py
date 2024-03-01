@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 
 from enum import Enum, EnumMeta
-from typing import Any, List, Sequence, Union
+from typing import Any, List, Optional, Sequence, Self, Union
 
 _log = logging.getLogger(__name__)
 
@@ -26,6 +26,17 @@ class BaseEnum(Enum, metaclass=BaseEnumMeta):
         print(Field.id) ---> id
         Field.id == 'id' ---> True
     """
+
+    @classmethod
+    def _missing_(cls, value: object) -> Optional[Self]:
+        if isinstance(value, str):
+            # be case insensitive
+            value = value.lower()
+            for member in cls:
+                if member.value == value:
+                    return member
+            return None
+        return None
 
     def __str__(self):
         return self.value
