@@ -11,7 +11,7 @@ Simple wrapper for the MyAnimeList API.
 __title__ = 'mal'
 __author__ = 'Skylake-dev'
 __license__ = 'MIT'
-__version__ = '0.7.1'
+__version__ = '0.8.0'
 
 import logging
 
