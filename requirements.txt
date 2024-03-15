@@ -1,1 +1,2 @@
 requests>=2.26
+typing_extensions>=4.0.1

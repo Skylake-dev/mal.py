@@ -3,7 +3,14 @@ from __future__ import annotations
 import logging
 
 from enum import Enum, EnumMeta
-from typing import Any, List, Optional, Sequence, Self, Union
+from typing import Any, List, Optional, Sequence, Union
+
+import sys
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
+del sys
 
 _log = logging.getLogger(__name__)
 
