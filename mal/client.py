@@ -141,6 +141,7 @@ class Client:
         if delay < 1.0:
             _log.warning(
                 'Attention: using delays shorter than 1s for bulk request may result in temporary or permanent blocking')
+        _log.info(f'parameter "delay" value set to {delay:.2f}s')
         self._api_call_manager.delay = delay
 
     def anime_search(
