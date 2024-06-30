@@ -27,6 +27,7 @@ class Client:
         self._anime_fields: List[Field] = Field.default_anime()
         self._manga_fields: List[Field] = Field.default_manga()
         self._include_nsfw: bool = False
+        self._auto_truncate: bool = False
 
     @property
     def limit(self) -> int:
@@ -107,6 +108,21 @@ class Client:
         _log.info(f'parameter "nsfw" default value set to {value}')
 
     @property
+    def auto_truncate(self) -> bool:
+        """Specifies whether to truncate automatically queries that are too long. Defaults to False.
+
+        If this parameter is False, a query longer than the maximum allowed by the API will
+        result in a ValueError, otherwise it will be truncated to the maximum length, producing
+        a log message.
+        """
+        return self._auto_truncate
+
+    @auto_truncate.setter
+    def auto_truncate(self, value: bool) -> None:
+        self._auto_truncate = value
+        _log.info(f'parameter "auto_truncate" default value set to {value}')
+
+    @property
     def delay(self) -> float:
         """Returns the current delay. This is the amount of time in seconds that
         each request will be delayed. The default value is 1 second.
@@ -155,9 +171,6 @@ class Client:
         Raises:
             ValueError: when the query is not between 3 and 64 characters
         """
-        if len(query) > 64 or len(query) < 3:
-            raise ValueError(
-                'query parameter needs to be between 3 and 64 characters long')
         parameters = self._build_parameters(
             Endpoint.ANIME, query=query, limit=limit, offset=offset, fields=fields, nsfw=include_nsfw)
         url: str = Endpoint.ANIME.url
@@ -193,9 +206,6 @@ class Client:
         Raises:
             ValueError: when the query is not between 3 and 64 characters
         """
-        if len(query) > 64 or len(query) < 3:
-            raise ValueError(
-                'query parameter needs to be between 3 and 64 characters long')
         parameters = self._build_parameters(
             Endpoint.MANGA, query=query, limit=limit, offset=offset, fields=fields, nsfw=include_nsfw)
         url: str = Endpoint.MANGA.url
@@ -528,6 +538,29 @@ class Client:
         else:
             return None
 
+    def _handle_query(self, q: str, endpoint: Endpoint) -> str:
+        # query parameter needs to be at least 3 chars
+        # and up to 64 chars for anime/manga search
+        # 344 chars for forum topics
+        if endpoint is Endpoint.ANIME or endpoint is Endpoint.MANGA:
+            max_len = 64
+        elif endpoint is Endpoint.FORUM_TOPICS:
+            max_len = 344
+        else:
+            # no need to do anythihng
+            return q
+        if len(q) < 3:
+            raise ValueError(
+                    f'query parameter for endpoint {endpoint} needs to be between 3 and {max_len} characters long')
+        elif len(q) > max_len:
+            if self.auto_truncate:
+                _log.info(f'cutting query "{q}" to {max_len} chars due to auto_truncate being set')
+                return q[:max_len]
+            else:
+                raise ValueError(
+                    f'query parameter for endpoint {endpoint} needs to be between 3 and {max_len} characters long')
+        return q
+
     def _build_parameters(
         self,
         endpoint: Endpoint,
@@ -548,7 +581,7 @@ class Client:
         """Interal function to build the parameter dictionary with some sanity checks."""
         parameters: Dict[str, str] = {}
         if query is not MISSING:
-            parameters['q'] = query
+            parameters['q'] = self._handle_query(query, endpoint)
         if limit is not MISSING:
             parameters['limit'] = str(self._get_limit(endpoint, limit))
         else:
