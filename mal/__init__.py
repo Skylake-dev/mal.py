@@ -4,7 +4,7 @@ MyAnimeList API wrapper
 
 Simple wrapper for the MyAnimeList API.
 
-:copyright: (c) 2022 Skylake-dev
+:copyright: (c) 2022-present Skylake-dev
 :license: MIT, see LICENSE for more details
 """
 
