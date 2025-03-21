@@ -552,10 +552,11 @@ class Client:
             return q
         if len(q) < 3:
             raise ValueError(
-                    f'query parameter for endpoint {endpoint} needs to be between 3 and {max_len} characters long')
+                f'query parameter for endpoint {endpoint} needs to be between 3 and {max_len} characters long')
         elif len(q) > max_len:
             if self.auto_truncate:
-                _log.info(f'cutting query "{q}" to {max_len} chars due to auto_truncate being set')
+                _log.info(
+                    f'cutting query "{q}" to {max_len} chars due to auto_truncate being set')
                 return q[:max_len]
             else:
                 raise ValueError(
