@@ -249,7 +249,7 @@ class Field(BaseEnum):
     opening_themes = 'opening_themes'
     ending_themes = 'ending_themes'
     # Manga only fields
-    authors = 'authors'
+    authors = 'authors{first_name,last_name}'
     num_chapters = 'num_chapters'           # 0 if not completed
     num_volumes = 'num_volumes'             # 0 if not completed
     serialization = 'serialization'
