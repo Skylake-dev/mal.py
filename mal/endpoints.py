@@ -11,6 +11,7 @@ class EndpointType(IntFlag):
     MANGA = 2
     LIST = 4
     FORUM = 8
+    CHARACTER = 16
 
 
 class Endpoint(Enum):
@@ -23,6 +24,8 @@ class Endpoint(Enum):
     ANIME = (BASE + '/anime', 100, EndpointType.ANIME)
     ANIME_RANKING = (BASE + '/anime/ranking', 500, EndpointType.ANIME)
     ANIME_SEASONAL = (BASE + '/anime/season', 500, EndpointType.ANIME)
+    ANIME_CHARACTERS = (
+        BASE + '/anime/{anime_id}/characters', 500, EndpointType.CHARACTER)
 
     MANGA = (BASE + '/manga', 100, EndpointType.MANGA)
     MANGA_RANKING = (BASE + '/manga/ranking', 500, EndpointType.MANGA)
@@ -59,3 +62,7 @@ class Endpoint(Enum):
     @property
     def is_forum(self) -> bool:
         return EndpointType.FORUM in self._type
+
+    @property
+    def is_character(self) -> bool:
+        return EndpointType.CHARACTER in self._type

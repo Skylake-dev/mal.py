@@ -6,6 +6,7 @@ from .connection import APICallManager
 from .endpoints import Endpoint
 from .base import PaginatedObject
 from .anime import Anime, AnimeSearchResults, AnimeList, AnimeRanking, Seasonal
+from .characters import AnimeCharactersList
 from .manga import Manga, MangaSearchResults, MangaList, MangaRanking
 from .forum import BoardCategory, ForumTopics, Discussion
 from .enums import (Field, AnimeListStatus, MangaListStatus, Season,
@@ -26,6 +27,7 @@ class Client:
         self._limit: int = 10
         self._anime_fields: List[Field] = Field.default_anime()
         self._manga_fields: List[Field] = Field.default_manga()
+        self._character_fields: List[Field] = Field.default_character()
         self._include_nsfw: bool = False
         self._auto_truncate: bool = False
 
@@ -92,6 +94,25 @@ class Client:
         self._manga_fields = [f for f in fields if f.is_manga]
         _log.info(
             f'parameter "manga_fields" default value set to {self._manga_fields}')
+
+    @property
+    def character_fields(self) -> List[Field]:
+        """Fields that are requested in a anime characters query. This value is used in
+        the following methods:
+         - get_anime_characters
+
+        Changes to this value are applied to all subsequent requests. Invalid fields
+        are automatically ignored.
+        It is possible to override this value per request by specifying the `fields` parameter.
+        """
+        return self._character_fields
+
+    @character_fields.setter
+    def character_fields(self, new_fields: Sequence[Union[Field, str]]) -> None:
+        fields = Field.from_list(new_fields)
+        self._character_fields = [f for f in fields if f.is_character]
+        _log.info(
+            f'parameter "character_fields" default value set to {self._character_fields}')
 
     @property
     def include_nsfw(self) -> bool:
@@ -231,6 +252,35 @@ class Client:
         url: str = Endpoint.ANIME.url + '/' + self._get_as_id(id)
         data = self._api_call_manager.api_call(url, params=parameters)
         return Anime(data)
+
+    def get_anime_characters(
+        self,
+        id: Union[int, str],
+        *,
+        limit: int = MISSING,
+        offset: int = MISSING,
+        fields: Sequence[Union[Field, str]] = MISSING
+    ) -> AnimeCharactersList:
+        """Get the details for the characters of a specific anime. Note that this method relies
+        on undocumented endpoints so it can stop working unexpectedly or change behaviour.
+
+        Args:
+            id: the id of the anime or the url of its MAL page
+
+        Keyword args:
+            limit: set the number of entries to retrieve, defaults to 10
+            offset: get results at a certain offset from the start, defaults to 0
+            fields: set which fields to get for each entry
+
+        Returns:
+            AnimeCharactersList: iterable with all the characters, possibly paginated
+        """
+        parameters = self._build_parameters(
+            Endpoint.ANIME_CHARACTERS, fields=fields, limit=limit, offset=offset)
+        url: str = Endpoint.ANIME_CHARACTERS.url.replace(
+            '{anime_id}', self._get_as_id(id))
+        data = self._api_call_manager.api_call(url, params=parameters)
+        return AnimeCharactersList(data)
 
     def get_manga(self, id: Union[int, str], *, fields: Sequence[Union[Field, str]] = MISSING) -> Manga:
         """Get the details for a specific manga given the id.
@@ -595,18 +645,24 @@ class Client:
             if endpoint.is_anime:
                 parameters['fields'] = ','.join(
                     [f.value for f in parsed_fields if f.is_anime])
-            else:
+            elif endpoint.is_manga:
                 parameters['fields'] = ','.join(
                     [f.value for f in parsed_fields if f.is_manga])
+            elif endpoint.is_character:
+                parameters['fields'] = ','.join(
+                    [f.value for f in parsed_fields if f.is_character])
             if endpoint.is_list:
                 parameters['fields'] += ',list_status'
         else:
             if endpoint.is_anime:
                 parameters['fields'] = ','.join(
                     [f.value for f in self._anime_fields])
-            else:
+            elif endpoint.is_manga:
                 parameters['fields'] = ','.join(
                     [f.value for f in self._manga_fields])
+            elif endpoint.is_character:
+                parameters['fields'] = ','.join(
+                    [f.value for f in self._character_fields])
             if endpoint.is_list:
                 parameters['fields'] += ',list_status'
         if status is not MISSING:

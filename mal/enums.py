@@ -207,8 +207,13 @@ class MangaRankingType(BaseEnum):
     favorite = 'favorite'
 
 
+class CharacterRole(BaseEnum):
+    main = 'main'
+    supporting = 'supporting'
+
+
 class Field(BaseEnum):
-    # Common fields for anime and manga
+    # Common fields for anime and manga and characters
     id = 'id'
     title = 'title'
     main_picture = 'main_picture'
@@ -248,11 +253,19 @@ class Field(BaseEnum):
     statistics = 'statistics'
     opening_themes = 'opening_themes'
     ending_themes = 'ending_themes'
+
     # Manga only fields
     authors = 'authors{first_name,last_name}'
     num_chapters = 'num_chapters'           # 0 if not completed
     num_volumes = 'num_volumes'             # 0 if not completed
     serialization = 'serialization'
+
+    # characters only fields
+    role = 'role'
+    first_name = 'first_name'       # can be empty
+    last_name = 'last_name'         # can be empty
+    alternative_name = 'alternative_name'   # can be empty
+    biography = 'biography'  # can be empty
 
     @property
     def anime_fields(self) -> List[Field]:
@@ -289,6 +302,24 @@ class Field(BaseEnum):
     @property
     def is_manga(self) -> bool:
         return self in self.manga_fields
+
+    @property
+    def character_fields(self) -> List[Field]:
+        """Returns all the fields that can be requested for a character."""
+        return [
+            self.id,
+            self.role,
+            self.first_name,
+            self.last_name,
+            self.alternative_name,
+            self.main_picture,
+            self.biography,
+            self.num_favorites
+        ]
+
+    @property
+    def is_character(self) -> bool:
+        return self in self.character_fields
 
     @classmethod
     def from_list(cls, fields: Sequence[Union[str, Field]]) -> List[Field]:
@@ -343,6 +374,13 @@ class Field(BaseEnum):
             Field.serialization
         ]
         return fields
+
+    @classmethod
+    def default_character(cls) -> List[Field]:
+        """Default fields that are requested for a character. Since there is little
+        information, these the ones that are possible.
+        """
+        return [field for field in Field if field.is_character]
 
     @classmethod
     def all_anime(cls) -> List[Field]:

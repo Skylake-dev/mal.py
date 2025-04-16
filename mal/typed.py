@@ -338,3 +338,34 @@ class DiscussionPayload(_PartDiscussionPayload, total=False):
 
 class TopicDetailPayload(PaginatedPayload):
     data: Sequence[DiscussionPayload]
+
+####
+# the classes below are used for undocumented endpoints
+####
+
+
+# Characters
+# NOTE: this only works for animes, the api does not return character info for
+# mangas.
+class _PartialCharacterDataPayload(TypedDict):
+    # this kind of stuff can be replaced with
+    # typing.Required but needs bump to python 3.11+
+    id: int
+
+
+class CharacterDataPayload(_PartialCharacterDataPayload, total=False):
+    first_name: str
+    last_name: str
+    alternative_name: str
+    main_picture: PicturePayload
+    biography: str
+    num_favorites: int
+
+
+class CharacterNodePayload(TypedDict):
+    node: CharacterDataPayload
+    role: str
+
+
+class CharactersPayload(PaginatedPayload):
+    data: Sequence[CharacterNodePayload]
