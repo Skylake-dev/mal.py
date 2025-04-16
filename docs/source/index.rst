@@ -11,7 +11,8 @@ Welcome to mal.py's documentation!
 **Features:**
 
 - anime and manga search given a keyword
-- fetch details of anime or manga given its id or its url
+- fetch details of an anime or manga given its id or its url
+- list characters of an anime
 - accessing public lists of users
 - retrieving seasonal anime
 - retrieve rankings for anime and manga
