@@ -149,6 +149,9 @@ class Recommendation:
     def __len__(self) -> int:
         return len(self._recommendations)
 
+    def __getitem__(self, idx: int) -> tuple[int, BaseResult]:
+        return self._recommendations[idx]
+
     def __str__(self) -> str:
         s = f''
         for entry in self._recommendations:

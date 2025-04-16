@@ -54,6 +54,9 @@ class Music:
     def __len__(self) -> int:
         return len(self._data)
 
+    def __getitem__(self, idx: int) -> Song:
+        return self._data[idx]
+
     def __str__(self) -> str:
         return '\n'.join(str(song) for song in self._data)
 
@@ -210,6 +213,9 @@ class AnimeSearchResults(PaginatedObject):
     def __len__(self) -> int:
         return len(self._results)
 
+    def __getitem__(self, idx: int) -> Anime:
+        return self._results[idx]
+
     def __str__(self) -> str:
         return '\n'.join([str(result) for result in self._results])
 
@@ -286,6 +292,9 @@ class AnimeList(UserList):
     def __len__(self) -> int:
         return super().__len__()
 
+    def __getitem__(self, idx: int) -> AnimeListEntry:
+        return self._list[idx]
+
     def __str__(self) -> str:
         return super().__str__()
 
@@ -323,6 +332,9 @@ class AnimeRanking(Ranking):
 
     def __len__(self) -> int:
         return super().__len__()
+
+    def __getitem__(self, idx: int) -> Anime:
+        return self._ranking[idx]
 
     def __str__(self) -> str:
         return super().__str__()
@@ -367,6 +379,9 @@ class Seasonal(PaginatedObject):
 
     def __iter__(self) -> Iterator[Anime]:
         return iter(self._list)
+
+    def __getitem__(self, idx: int) -> Anime:
+        return self._list[idx]
 
     @property
     def season_info(self) -> str:

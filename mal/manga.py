@@ -143,6 +143,9 @@ class MangaSearchResults(PaginatedObject):
     def __len__(self) -> int:
         return len(self._results)
 
+    def __getitem__(self, idx: int) -> Manga:
+        return self._results[idx]
+
     def __str__(self) -> str:
         return '\n'.join([str(result) for result in self._results])
 
@@ -221,6 +224,9 @@ class MangaList(UserList):
     def __len__(self) -> int:
         return super().__len__()
 
+    def __getitem__(self, idx: int) -> MangaListEntry:
+        return self._list[idx]
+
     def __str__(self) -> str:
         return super().__str__()
 
@@ -258,6 +264,9 @@ class MangaRanking(Ranking):
 
     def __len__(self) -> int:
         return super().__len__()
+
+    def __getitem__(self, idx: int) -> Manga:
+        return self._ranking[idx]
 
     def __str__(self) -> str:
         return super().__str__()

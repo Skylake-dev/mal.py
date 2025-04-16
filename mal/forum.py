@@ -78,6 +78,9 @@ class BoardCategory:
     def __len__(self) -> int:
         return len(self.boards)
 
+    def __getitem__(self, idx: int) -> Board:
+        return self.boards[idx]
+
     def __str__(self) -> str:
         s = f'Category: {self.title}'
         s += '\n'.join([str(board) for board in self.boards])
@@ -142,6 +145,9 @@ class ForumTopics(PaginatedObject):
 
     def __len__(self) -> int:
         return len(self._topics)
+
+    def __getitem__(self, idx: int) -> Topic:
+        return self._topics[idx]
 
     def __str__(self) -> str:
         if self.query:
@@ -292,6 +298,9 @@ class Discussion:
     def __len__(self) -> int:
         return self.num_posts
 
+    def __getitem__(self, idx: int) -> ForumPost:
+        return self.posts[idx]
+
     def __str__(self) -> str:
         s = f'Discussion: "{self.title}":\n'
         s += '\n'.join([str(post) for post in self.posts])
@@ -324,6 +333,9 @@ class TopicDetail(PaginatedObject):
 
     def __iter__(self) -> Iterator[Discussion]:
         return iter(self._discussions)
+
+    def __getitem__(self, idx: int) -> Discussion:
+        return self._discussions[idx]
 
     def __str__(self) -> str:
         return '\n'.join([str(disc) for disc in self._discussions])
