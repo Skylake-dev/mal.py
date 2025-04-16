@@ -64,3 +64,11 @@ For more information on how to use logging refer to the documentation of python:
 - [logging HOWTO guide](https://docs.python.org/3/howto/logging.html)
 
 This project is still a work in progress, if you have problems or find bugs feel free to open an issue or start a discussion.
+
+## Useful links
+
+- [This package documentation](https://malpy.readthedocs.io/en/latest/index.html)
+- [MAL API official docs](https://myanimelist.net/apiconfig/references/api/v2)
+- [Getting started thread on the forum](https://myanimelist.net/forum/?topicid=1973141)
+- [Unofficial discord server for the API](https://discord.gg/fr7GWvSBxC)
+- [known problems and missing docs of the MAL API](https://myanimelist.net/forum/?topicid=2006357)
