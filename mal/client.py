@@ -409,7 +409,8 @@ class Client:
         """
         parameters = self._build_parameters(
             Endpoint.ANIME_SEASONAL, limit=limit, offset=offset, fields=fields, sort=sort, nsfw=include_nsfw)
-        url = f'{Endpoint.ANIME_SEASONAL}/{year}/{season}'
+        season = Season(season)  # this validates season or raises ValueError
+        url = f'{Endpoint.ANIME_SEASONAL}/{year}/{season.value}'
         data = self._api_call_manager.api_call(url, params=parameters)
         results: Seasonal = Seasonal(data)
         return results
