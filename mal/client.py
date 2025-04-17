@@ -380,6 +380,13 @@ class Client:
         include_nsfw: bool = MISSING
     ) -> Seasonal:
         """Returns the list of anime aired during a specific season.
+        Note that the field `start_season`, if included, is not necessarily the
+        season that was requested. This is because the API does not return only
+        the anime that started in ththe requested season but all the ones that were airing
+        during that season. In particular also titles that started before the
+        requested season (that maybe finished or still ongoing) are included in
+        the response. To get only the ones started in this season the user needs
+        to filter the results by looking at the `start_season` attribute.
 
         Args:
             year: the desired year

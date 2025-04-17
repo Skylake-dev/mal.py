@@ -111,13 +111,25 @@ class Anime(Result):
 
     @property
     def start_season(self) -> str:
-        """The starting season, for example 'spring 2016'."""
+        """The starting season, for example 'spring 2016'.
+        Note that for results retrieved from the seasonal method this
+        may not correspond to the starting season, see `client.get_seasonal_anime`.
+        """
         if self._start_season is not MISSING:
             season = self._start_season['season']
             year = self._start_season['year']
             return f'{season} {year}'
         else:
             return 'information not requested or missing'
+
+    @property
+    def year(self) -> Optional[int]:
+        """Year in which the broadcast started, if present"""
+        if self._start_season is not MISSING:
+            year = self._start_season['year']
+            return year
+        else:
+            return None
 
     @property
     def studios(self) -> str:
