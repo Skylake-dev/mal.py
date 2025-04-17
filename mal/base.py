@@ -30,7 +30,7 @@ import sys
 if sys.version_info >= (3, 9):
     from collections.abc import Iterable, Sized
 else:
-    from typing import Iterable
+    from typing import Iterable, Sized
 del sys
 from typing import TypeVar, Protocol, runtime_checkable
 
