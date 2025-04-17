@@ -278,7 +278,7 @@ class Result(BaseResult):
     def end_date(self) -> Optional[date]:
         """Returns the ending date as a datetime.date."""
         if self._end is not MISSING:
-            return datetime.strptime(self._end, '%Y-%m-%d')
+            return datetime.date(datetime.strptime(self._end, '%Y-%m-%d'))
         return None
 
     @property
