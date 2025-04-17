@@ -26,7 +26,12 @@ from .typed import (
 
 _log = logging.getLogger(__name__)
 
-from collections.abc import Iterable, Sized
+import sys
+if sys.version_info >= (3, 9):
+    from collections.abc import Iterable, Sized
+else:
+    from typing import Iterable
+del sys
 from typing import TypeVar, Protocol, runtime_checkable
 
 T = TypeVar('T')
