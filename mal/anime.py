@@ -5,7 +5,7 @@ from typing import Dict, List, Iterator, Optional, Sequence, Union
 from .utils import MISSING
 from .endpoints import Endpoint
 from .enums import AdaptationFrom, AnimeStatus, AnimeMediaType, AnimeListStatus, AnimeRankingType
-from .base import Result, UserListEntry, UserList, ListStatus, Ranking, PaginatedObject
+from .base import Result, UserListEntry, UserList, ListStatus, Ranking, PaginatedObject, ReadOnlyIterable
 from .typed import (
     AnimePayload,
     AnimeSearchPayload,
@@ -38,27 +38,23 @@ class Song:
         return f'{self.id} - {self.description}'
 
 
-class Music:
+class Music(ReadOnlyIterable[Song]):
     """Represents opening or ending themes for an anime.
-    Iterate over this to get all songs.
+    Directly iterate over this object to get all songs.
+
+    Attributes:
+        songs: list with all the songs
     """
 
     def __init__(self, data: Sequence[MusicPayload]) -> None:
-        self._data: List[Song] = []
+        self.songs: List[Song] = []
+        # satisfy the ReadOnlyProtocol structure
+        self._list = self.songs
         for song in data:
-            self._data.append(Song(song))
-
-    def __iter__(self) -> Iterator[Song]:
-        return iter(self._data)
-
-    def __len__(self) -> int:
-        return len(self._data)
-
-    def __getitem__(self, idx: int) -> Song:
-        return self._data[idx]
+            self.songs.append(Song(song))
 
     def __str__(self) -> str:
-        return '\n'.join(str(song) for song in self._data)
+        return '\n'.join(str(song) for song in self.songs)
 
 
 class Statistics:
@@ -193,31 +189,23 @@ class Anime(Result):
         self.raw: AnimePayload = payload
 
 
-class AnimeSearchResults(PaginatedObject):
-    """Container for anime search results. Iterable and printable.
+class AnimeSearchResults(PaginatedObject, ReadOnlyIterable[Anime]):
+    """Container for anime search results. Directly iterate over this object to retrieve
+    the results.
 
     Attributes:
+        results: list with all the search results.
         raw: The raw json data for this object as returned by the API.
     """
 
     def __init__(self, data: AnimeSearchPayload) -> None:
         super().__init__(data)
-        self._results: List[Anime] = []
+        self.results: List[Anime] = []
+        # satisfy the ReadOnlyProtocol structure
+        self._list = self.results
         for el in data['data']:
-            self._results.append(Anime(el['node']))
+            self.results.append(Anime(el['node']))
         self.raw: AnimeSearchPayload = data
-
-    def __iter__(self) -> Iterator[Anime]:
-        return iter(self._results)
-
-    def __len__(self) -> int:
-        return len(self._results)
-
-    def __getitem__(self, idx: int) -> Anime:
-        return self._results[idx]
-
-    def __str__(self) -> str:
-        return '\n'.join([str(result) for result in self._results])
 
 
 class AnimeListEntryStatus(ListStatus):
@@ -275,25 +263,24 @@ class AnimeListEntry(UserListEntry):
         return f'{self.entry.title} - {str(self.list_status)}'
 
 
-class AnimeList(UserList):
-    """Iterable object containing the anime list of a user."""
+class AnimeList(UserList, ReadOnlyIterable[AnimeListEntry]):
+    """Iterable object containing the anime list of a user. Directly iterate over this
+    object to retrieve the entries.
+
+    Attributes:
+        entries: list with all the entries
+        raw: The raw json data for this object as returned by the API
+    """
 
     def __init__(self, data: AnimeListPayload) -> None:
         super().__init__(data)
         self.raw: AnimeListPayload = data
-        self._list: List[AnimeListEntry] = []
+        self.entries: List[AnimeListEntry] = []
+        # satisfy the ReadOnlyProtocol structure
+        self._list = self.entries
         for item in data['data']:
-            self._list.append(AnimeListEntry(item))
+            self.entries.append(AnimeListEntry(item))
         self.average_score: float = self._compute_average_score()
-
-    def __iter__(self) -> Iterator[AnimeListEntry]:
-        return iter(self._list)
-
-    def __len__(self) -> int:
-        return super().__len__()
-
-    def __getitem__(self, idx: int) -> AnimeListEntry:
-        return self._list[idx]
 
     def __str__(self) -> str:
         return super().__str__()
@@ -351,39 +338,34 @@ class AnimeRanking(Ranking):
         return self._ranking[rank]
 
 
-class Seasonal(PaginatedObject):
-    """Container for seasonal anime searches.
+class Seasonal(PaginatedObject, ReadOnlyIterable[Anime]):
+    """Container for seasonal anime searches. Directly iterate over this object to retrieve
+    all results.
 
     Attributes:
         year: the year of this season
         season: which season was requested
+        results: list with all the results
         raw: The raw json data for this object as returned by the API.
     """
 
     def __init__(self, data: SeasonalAnimePayload) -> None:
         super().__init__(data)
-        self._list: List[Anime] = []
+        self.results: List[Anime] = []
+        # satisfy the ReadOnlyProtocol structure
+        self._list = self.results
         for item in data['data']:
-            self._list.append(Anime(item['node']))
+            self.results.append(Anime(item['node']))
         self.year: int = data['season']['year']
         self.season: str = data['season']['season']
         self.raw: SeasonalAnimePayload = data
 
     def __str__(self) -> str:
         s = f'{self.season} {self.year} anime:\n'
-        s += '\n'.join([str(anime) for anime in self._list])
+        s += '\n'.join([str(anime) for anime in self.results])
         return s
-
-    def __len__(self) -> int:
-        return len(self._list)
-
-    def __iter__(self) -> Iterator[Anime]:
-        return iter(self._list)
-
-    def __getitem__(self, idx: int) -> Anime:
-        return self._list[idx]
 
     @property
     def season_info(self) -> str:
         """Information about the season."""
-        return f'{self.season} {self.year}, {len(self._list)} anime'
+        return f'{self.season} {self.year}, {len(self.results)} anime'

@@ -4,7 +4,7 @@ from typing import Dict, List, Iterator, Optional, Union
 from .endpoints import Endpoint
 from .utils import MISSING
 from .enums import MangaStatus, MangaMediaType, MangaListStatus, MangaRankingType
-from .base import Result, ListStatus, UserListEntry, UserList, Ranking, PaginatedObject
+from .base import Result, ListStatus, UserListEntry, UserList, Ranking, PaginatedObject, ReadOnlyIterable
 from .typed import (
     AuthorPayload,
     GenericPayload,
@@ -123,7 +123,7 @@ class Manga(Result):
         self.raw: MangaPayload = payload
 
 
-class MangaSearchResults(PaginatedObject):
+class MangaSearchResults(PaginatedObject, ReadOnlyIterable[Manga]):
     """Container for manga search results. Iterable and printable.
 
     Attributes:
@@ -132,22 +132,12 @@ class MangaSearchResults(PaginatedObject):
 
     def __init__(self, data: MangaSearchPayload) -> None:
         super().__init__(data)
-        self._results: List[Manga] = []
+        self.results: List[Manga] = []
+        # satisfy the ReadOnlyProtocol structure
+        self._list = self.results
         for el in data['data']:
-            self._results.append(Manga(el['node']))
+            self.results.append(Manga(el['node']))
         self.raw: MangaSearchPayload = data
-
-    def __iter__(self) -> Iterator[Manga]:
-        return iter(self._results)
-
-    def __len__(self) -> int:
-        return len(self._results)
-
-    def __getitem__(self, idx: int) -> Manga:
-        return self._results[idx]
-
-    def __str__(self) -> str:
-        return '\n'.join([str(result) for result in self._results])
 
 
 class MangaListEntryStatus(ListStatus):
@@ -207,25 +197,24 @@ class MangaListEntry(UserListEntry):
         return f'{self.entry.title} - {str(self.list_status)}'
 
 
-class MangaList(UserList):
-    """Iterable object containing the manga list of a user."""
+class MangaList(UserList, ReadOnlyIterable[MangaListEntry]):
+    """Iterable object containing the manga list of a user. Directly iterate over this
+    object to retrieve the entries.
+
+    Attributes:
+        entries: list with all the entries
+        raw: The raw json data for this object as returned by the API
+    """
 
     def __init__(self, data: MangaListPayload) -> None:
         super().__init__(data)
         self.raw: MangaListPayload = data
-        self._list: List[MangaListEntry] = []
+        self.entries: List[MangaListEntry] = []
+        # satisfy the ReadOnlyProtocol structure
+        self._list = self.entries
         for item in data['data']:
-            self._list.append(MangaListEntry(item))
+            self.entries.append(MangaListEntry(item))
         self.average_score: float = self._compute_average_score()
-
-    def __iter__(self) -> Iterator[MangaListEntry]:
-        return iter(self._list)
-
-    def __len__(self) -> int:
-        return super().__len__()
-
-    def __getitem__(self, idx: int) -> MangaListEntry:
-        return self._list[idx]
 
     def __str__(self) -> str:
         return super().__str__()

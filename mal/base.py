@@ -26,6 +26,40 @@ from .typed import (
 
 _log = logging.getLogger(__name__)
 
+from collections.abc import Iterable, Sized
+from typing import TypeVar, Protocol, runtime_checkable
+
+T = TypeVar('T')
+
+
+@runtime_checkable
+class ReadOnlyIterable(Iterable[T], Sized, Protocol[T]):
+    """Base class for all the objects supporting iteration. This is widely
+    used throughout the library for objects returning list of values.
+
+    Objects implementing this protocol offer the following functionality:
+    - can be iterated over directly (i.e. use in a for)
+    - have a size (i.e. can use `len` on them to get number of elements)
+    - access elements with subscript (e.g. a[0]). do not support slices
+    - default __str__ and __repr__ methods
+    """
+    _list: List[T]
+
+    def __iter__(self) -> Iterator[T]:
+        return iter(self._list)
+
+    def __len__(self) -> int:
+        return len(self._list)
+
+    def __getitem__(self, idx: int) -> T:
+        return self._list[idx]
+
+    def __str__(self) -> str:
+        return '\n'.join(str(el for el in self._list))
+
+    def __repr__(self) -> str:
+        return self.__str__()
+
 
 class PaginatedObject:
     """Base class for results that can consist of multiple pages. Implements the method
@@ -128,32 +162,36 @@ class Related:
         return self._related
 
 
-class Recommendation:
-    """Recommendation data.
+class Recommendation(ReadOnlyIterable[Tuple[int, BaseResult]]):
+    """Recommendation data. Directly iterate over this
+    object to retrieve the entries. Each element is a tuple with the number of
+    recommending users and the title that is recommended
 
-    For now it is only used to print the recommendations sorted by the number
-    of users who gave it.
+    Attributes:
+        recommendations: list of recommendations
     """
 
     def __init__(self, data: Sequence[RecommendationPayload]) -> None:
-        self._list: List[Tuple[int, BaseResult]] = []
+        self.recommendations: List[Tuple[int, BaseResult]] = []
+        # satisfy the ReadOnlyProtocol structure
+        self._list = self.recommendations
         for entry in data:
-            self._list.append(
+            self.recommendations.append(
                 (entry['num_recommendations'], BaseResult(entry['node'])))
         # sort by the number of people who recommended a specific title
-        self._list.sort(key=lambda x: x[0], reverse=True)
+        self.recommendations.sort(key=lambda x: x[0], reverse=True)
 
     def __str__(self) -> str:
         s = f''
-        for entry in self._list:
+        for entry in self.recommendations:
             s += f'{entry[1]} - recommended by {entry[0]} people.\n'
         return s
 
     @property
     def top_recommendation(self) -> Optional[str]:
         """Recommendation with the highest number of users. Returns None if there aren't any."""
-        if self._list:
-            top = self._list[0]
+        if self.recommendations:
+            top = self.recommendations[0]
             return f'{top[1]} - recommended by {top[0]} people.\n'
         return None
 

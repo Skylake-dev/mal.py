@@ -1,7 +1,7 @@
 from __future__ import annotations
-from typing import List, Iterator, Optional
+from typing import List, Optional
 
-from .base import PaginatedObject
+from .base import PaginatedObject, ReadOnlyIterable
 from .enums import CharacterRole
 from .typed import CharacterNodePayload, CharactersPayload, PicturePayload
 
@@ -52,7 +52,7 @@ class AnimeCharacter:
         return self.__str__()
 
 
-class AnimeCharactersList(PaginatedObject):
+class AnimeCharactersList(PaginatedObject, ReadOnlyIterable[AnimeCharacter]):
     """Iterable object containing the characters from the specified anime.
 
     Attributes:
@@ -65,15 +65,6 @@ class AnimeCharactersList(PaginatedObject):
         for item in data['data']:
             self._list.append(AnimeCharacter(item))
         self.raw: CharactersPayload = data
-
-    def __iter__(self) -> Iterator[AnimeCharacter]:
-        return iter(self._list)
-
-    def __len__(self) -> int:
-        return len(self._list)
-
-    def __getitem__(self, idx: int) -> AnimeCharacter:
-        return self._list[idx]
 
     def __str__(self) -> str:
         return '\n'.join(str(c) for c in self._list)

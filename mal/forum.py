@@ -1,7 +1,7 @@
 from datetime import datetime
-from typing import List, Iterator, Optional
+from typing import List, Optional
 
-from .base import PaginatedObject
+from .base import PaginatedObject, ReadOnlyIterable
 
 from .typed import (
     SubBoardPayload,
@@ -58,8 +58,8 @@ class Board:
         return s
 
 
-class BoardCategory:
-    """Boards grouped by category.
+class BoardCategory(ReadOnlyIterable[Board]):
+    """Boards grouped by category. Directly iterate over this object to retrieve all boards.
 
     Attributes:
         title: the name of this cateogry
@@ -69,17 +69,10 @@ class BoardCategory:
     def __init__(self, data: BoardCategoryPayload) -> None:
         self.title: str = data['title']
         self.boards: List[Board] = []
+        # satisfy the ReadOnlyProtocol structure
+        self._list = self.boards
         for board in data['boards']:
             self.boards.append(Board(board))
-
-    def __iter__(self) -> Iterator[Board]:
-        return iter(self.boards)
-
-    def __len__(self) -> int:
-        return len(self.boards)
-
-    def __getitem__(self, idx: int) -> Board:
-        return self.boards[idx]
 
     def __str__(self) -> str:
         s = f'Category: {self.title}'
@@ -124,8 +117,9 @@ class Topic:
         return datetime.fromisoformat(self._last_post_created_at)
 
 
-class ForumTopics(PaginatedObject):
+class ForumTopics(PaginatedObject, ReadOnlyIterable[Topic]):
     """Results of a topic query. Contains the resulting topics.
+    Directly iterate over this object to retrieve all the topics.
 
     Attributes:
         query: query that gave these results
@@ -135,26 +129,17 @@ class ForumTopics(PaginatedObject):
     def __init__(self, data: ForumTopicsPayload, query: str) -> None:
         super().__init__(data)
         self.query: str = query
-        self._topics: List[Topic] = []
+        self._list: List[Topic] = []
         for topic in data['data']:
-            self._topics.append(Topic(topic))
+            self._list.append(Topic(topic))
         self.raw: ForumTopicsPayload = data
-
-    def __iter__(self) -> Iterator[Topic]:
-        return iter(self._topics)
-
-    def __len__(self) -> int:
-        return len(self._topics)
-
-    def __getitem__(self, idx: int) -> Topic:
-        return self._topics[idx]
 
     def __str__(self) -> str:
         if self.query:
             s = f'Topics for the query "{self.query}:"\n'
         else:
             s = f'Topics:\n'
-        s += '\n'.join([str(topic) for topic in self._topics])
+        s += '\n'.join([str(topic) for topic in self._list])
         return s
 
 
@@ -194,8 +179,9 @@ class PollOption:
         return f'{self.text} - {self.votes} votes'
 
 
-class Poll:
-    """Represents a poll posted on the forum.
+class Poll(ReadOnlyIterable[PollOption]):
+    """Represents a poll posted on the forum. Directly iterate over this object to retrive
+    all poll options.
 
     Attributes:
         id: id of the poll
@@ -209,14 +195,10 @@ class Poll:
         self.question: str = data['question']
         self.closed: bool = data['closed']
         self.options: List[PollOption] = []
+        # satisfy the ReadOnlyProtocol structure
+        self._list = self.options
         for option in data['options']:
             self.options.append(PollOption(option))
-
-    def __iter__(self) -> Iterator[PollOption]:
-        return iter(self.options)
-
-    def __len__(self) -> int:
-        return self.num_options
 
     def __str__(self) -> str:
         s = f'Poll: {self.question}:\n'
@@ -269,8 +251,9 @@ class ForumPost:
         return datetime.fromisoformat(self._created_at)
 
 
-class Discussion:
-    """Represents a discussion on a board.
+class Discussion(ReadOnlyIterable[ForumPost]):
+    """Represents a discussion on a board. Directly iterate over this object to retrieve
+    all posts.
 
     Attributes:
         title: the title of the discussion
@@ -282,6 +265,8 @@ class Discussion:
     def __init__(self, data: DiscussionPayload) -> None:
         self.title: str = data['title']
         self.posts: List[ForumPost] = []
+        # satisfy the ReadOnlyProtocol structure
+        self._list = self.posts
         for post in data['posts']:
             self.posts.append(ForumPost(post))
         # sort by number so that the discussion is printed in order
@@ -291,15 +276,6 @@ class Discussion:
         if 'poll' in data:
             self.poll = Poll(data['poll'])
         self.raw: DiscussionPayload = data
-
-    def __iter__(self) -> Iterator[ForumPost]:
-        return iter(self.posts)
-
-    def __len__(self) -> int:
-        return self.num_posts
-
-    def __getitem__(self, idx: int) -> ForumPost:
-        return self.posts[idx]
 
     def __str__(self) -> str:
         s = f'Discussion: "{self.title}":\n'
@@ -314,28 +290,23 @@ class Discussion:
         return len(self.posts)
 
 
-class TopicDetail(PaginatedObject):
+class TopicDetail(PaginatedObject, ReadOnlyIterable[Discussion]):
     """Results for a topic detail query. Contains the discussions under this topic.
+    Directly iterate over this object to retrieve all discussions
 
     Attributes:
         raw: The raw json data for this object as returned by the API.
+        discussions: list of discussions on this topic.
     """
 
     def __init__(self, data: TopicDetailPayload) -> None:
         super().__init__(data)
-        self._discussions: List[Discussion] = []
+        self.discussions: List[Discussion] = []
+        # satisfy the ReadOnlyProtocol structure
+        self._list = self.discussions
         for discussion in data['data']:
-            self._discussions.append(Discussion(discussion))
+            self.discussions.append(Discussion(discussion))
         self.raw: TopicDetailPayload = data
 
-    def __len__(self) -> int:
-        return len(self._discussions)
-
-    def __iter__(self) -> Iterator[Discussion]:
-        return iter(self._discussions)
-
-    def __getitem__(self, idx: int) -> Discussion:
-        return self._discussions[idx]
-
     def __str__(self) -> str:
-        return '\n'.join([str(disc) for disc in self._discussions])
+        return '\n'.join([str(disc) for disc in self.discussions])
