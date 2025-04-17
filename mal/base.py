@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime, date
-from typing import Any, Dict, Iterator, List, Optional, Sequence, Union
+from typing import Any, Dict, Iterator, List, Optional, Sequence, Tuple, Union
 
 from .connection import APICallManager
 from .utils import MISSING
@@ -136,33 +136,24 @@ class Recommendation:
     """
 
     def __init__(self, data: Sequence[RecommendationPayload]) -> None:
-        self._recommendations: Sequence[tuple[int, BaseResult]] = []
+        self._list: List[Tuple[int, BaseResult]] = []
         for entry in data:
-            self._recommendations.append(
+            self._list.append(
                 (entry['num_recommendations'], BaseResult(entry['node'])))
         # sort by the number of people who recommended a specific title
-        self._recommendations.sort(key=lambda x: x[0], reverse=True)
-
-    def __iter__(self) -> Iterator[tuple[int, BaseResult]]:
-        return iter(self._recommendations)
-
-    def __len__(self) -> int:
-        return len(self._recommendations)
-
-    def __getitem__(self, idx: int) -> tuple[int, BaseResult]:
-        return self._recommendations[idx]
+        self._list.sort(key=lambda x: x[0], reverse=True)
 
     def __str__(self) -> str:
         s = f''
-        for entry in self._recommendations:
+        for entry in self._list:
             s += f'{entry[1]} - recommended by {entry[0]} people.\n'
         return s
 
     @property
     def top_recommendation(self) -> Optional[str]:
         """Recommendation with the highest number of users. Returns None if there aren't any."""
-        if self._recommendations:
-            top = self._recommendations[0]
+        if self._list:
+            top = self._list[0]
             return f'{top[1]} - recommended by {top[0]} people.\n'
         return None
 
