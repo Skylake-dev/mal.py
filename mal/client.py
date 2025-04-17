@@ -669,15 +669,29 @@ class Client:
                 parameters['fields'] += ',list_status'
         if status is not MISSING:
             if isinstance(status, str):
-                value = status
-            else:
-                value = status.value
+                if endpoint.is_anime:
+                    status = AnimeListStatus(status)
+                elif endpoint.is_manga:
+                    status = MangaListStatus(status)
+                else:
+                    raise ValueError(
+                        f'status parameter {status} should not be passed to endpoint {endpoint}')
+            value = status.value
             parameters['status'] = value
         if sort is not MISSING:
             if isinstance(sort, str):
-                value = sort    # NOTE: how can i validate the string?
-            else:
-                value = sort.value
+                if endpoint.is_anime:
+                    # can be seasonal or list
+                    try:
+                        sort = AnimeListSort(sort)
+                    except ValueError:
+                        sort = SeasonalAnimeSort(sort)
+                elif endpoint.is_manga:
+                    sort = MangaListSort(sort)
+                else:
+                    raise ValueError(
+                        f'sort parameter {status} should not be passed to endpoint {endpoint}')
+            value = sort.value
             parameters['sort'] = value
         # nsfw overrides the value stored in self.include_nsfw
         if nsfw is not MISSING:
