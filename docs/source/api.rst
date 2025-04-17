@@ -12,6 +12,14 @@ mal.anime module
    :undoc-members:
    :show-inheritance:
 
+mal.characters module
+----------------
+
+.. automodule:: mal.characters
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 mal.base module
 ---------------
 
