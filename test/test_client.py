@@ -30,6 +30,14 @@ class TestClient(unittest.TestCase):
         self.assertEqual(self.client.limit, 100)
         with self.assertRaises(ValueError):
             self.client.limit = -10
+        with self.assertRaises(ValueError):
+            self.client.limit = 0
+        # purposefully wrong values
+        with self.assertRaises(ValueError):
+            self.client.limit = 0.1  # type: ignore
+        with self.assertRaises(ValueError):
+            self.client.limit = "-10"   # type: ignore
+        self.assertGreater(self.client.limit, 0)    # type: ignore
 
     def test_fields(self):
         self.assertEqual(self.client.anime_fields, Field.default_anime())
@@ -45,7 +53,8 @@ class TestClient(unittest.TestCase):
         self.assertTrue(all([f.is_manga for f in self.client.manga_fields]))
 
     def test_nsfw(self):
-        with_nsfw = self.client.get_anime_list('skylake_', status='completed', include_nsfw=True, limit=1000)
+        with_nsfw = self.client.get_anime_list(
+            'skylake_', status='completed', include_nsfw=True, limit=1000)
         no_nsfw = self.client.get_anime_list('skylake_', status='completed', limit=1000)
         self.assertTrue(len(with_nsfw) > len(no_nsfw))
 
@@ -61,7 +70,7 @@ class TestClient(unittest.TestCase):
         paginated_search_with_offset = self.client.manga_search('kanojo', limit=2, offset=2)
         previous_page = self.client.previous_page(paginated_search_with_offset)
         self.assertIsNotNone(previous_page)
-        self.assertIsNone(self.client.previous_page(previous_page)) # type: ignore
+        self.assertIsNone(self.client.previous_page(previous_page))  # type: ignore
 
     def test_delay(self):
         self.client.delay = 5.0
@@ -69,17 +78,17 @@ class TestClient(unittest.TestCase):
         self.client.get_anime(53887)
         self.client.get_anime(40357)
         end = time.time()
-        self.assertTrue((end-start) > 5.0)
+        self.assertTrue((end - start) > 5.0)
 
     def test_auto_truncation(self):
         self.client.auto_truncate = False
         # queries that are too long
         with self.assertRaises(ValueError):
-            self.client.anime_search('b'*100)
+            self.client.anime_search('b' * 100)
         with self.assertRaises(ValueError):
-            self.client.manga_search('b'*100)
+            self.client.manga_search('b' * 100)
         with self.assertRaises(ValueError):
-            self.client.get_topics(query='b'*400)
+            self.client.get_topics(query='b' * 400)
         # queries that are too short
         with self.assertRaises(ValueError):
             self.client.anime_search('b')
@@ -91,11 +100,11 @@ class TestClient(unittest.TestCase):
         self.client.auto_truncate = True
         # long queries are truncated and the operation is logged
         with self.assertLogs('mal.client', level='INFO'):
-            self.client.anime_search('b'*100)
+            self.client.anime_search('b' * 100)
         with self.assertLogs('mal.client', level='INFO'):
-            self.client.manga_search('b'*100)
+            self.client.manga_search('b' * 100)
         with self.assertLogs('mal.client', level='INFO'):
-            self.client.get_topics(query='b'*400)
+            self.client.get_topics(query='b' * 400)
         # short queries are unaffected
         with self.assertRaises(ValueError):
             self.client.anime_search('b')
@@ -107,6 +116,10 @@ class TestClient(unittest.TestCase):
     def test_logging(self):
         with self.assertLogs('mal.client', level='INFO'):
             self.client.anime_fields = Field.default_anime()
+        with self.assertLogs('mal.client', level='INFO'):
+            self.client.manga_fields = Field.default_manga()
+        with self.assertLogs('mal.client', level='INFO'):
+            self.client.character_fields = Field.default_character()
         with self.assertLogs('mal.client', level='INFO'):
             self.client.limit = 100
         # delay too short causes a warning

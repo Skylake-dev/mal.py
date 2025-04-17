@@ -44,9 +44,11 @@ class Client:
 
     @limit.setter
     def limit(self, value: int) -> None:
-        if value < 0:
+        # make sure this is an int
+        value = int(value)
+        if value <= 0:
             raise ValueError('limit must be a positive integer')
-        self._limit = int(value)
+        self._limit = value
         _log.info(
             f'parameter "search_limit" default value set to {self._limit}')
 
