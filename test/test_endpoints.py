@@ -4,7 +4,7 @@ import sys
 sys.path.append('..')
 
 
-class TestEnums(unittest.TestCase):
+class TestEndpoints(unittest.TestCase):
 
     def test_type(self):
         # this is very verbose and probably there is a better way but it's better

@@ -113,6 +113,16 @@ class TestClient(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.client.get_topics(query='b')
 
+    def test_argument_validation(self):
+        with self.assertRaises(ValueError):
+            self.client.get_anime_list('skylake_', status='invalid_status')
+        with self.assertRaises(ValueError):
+            self.client.get_manga_list('skylake_', status='invalid_status')
+        with self.assertRaises(ValueError):
+            self.client.get_seasonal_anime(2014, 'winter', sort='invalid_sort')
+        with self.assertRaises(ValueError):
+            self.client.get_seasonal_anime(2014, 'invalid_season')
+
     def test_logging(self):
         with self.assertLogs('mal.client', level='INFO'):
             self.client.anime_fields = Field.default_anime()
